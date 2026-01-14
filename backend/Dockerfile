@@ -1,12 +1,12 @@
-# Development backend container with hot reload
+# Production backend container
 FROM node:20-alpine AS base
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm install
+RUN npm install --production
 
 COPY schema.sql ./schema.sql
+COPY src ./src
 
-EXPOSE 4000
-CMD ["npm", "run", "dev"]
-
+EXPOSE $PORT
+CMD ["npm", "start"]
