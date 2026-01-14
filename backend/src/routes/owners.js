@@ -1,0 +1,81 @@
+import express from 'express';
+import { query } from '../db.js';
+import { authRequired } from '../auth.js';
+
+export const ownersRouter = express.Router();
+
+ownersRouter.use(authRequired);
+
+ownersRouter.get('/', async (req, res) => {
+  const search = req.query.search || '';
+  const like = `%${search}%`;
+  const { rows } = await query(
+    `
+    select o.*, coalesce(count(d.id), 0) as dog_count
+    from owners o
+    left join dogs d on d.owner_id = o.id
+    where ($1 = '' or 
+      o.name ilike $2 or 
+      o.phone ilike $2 or
+      exists (
+        select 1 
+        from dogs d2
+        where d2.owner_id = o.id
+        and exists (
+          select 1 
+          from unnest(d2.grooming_tolerance::text[]) as tag
+          where tag ilike $2
+        )
+      )
+    )
+    group by o.id
+    order by o.updated_at desc
+    limit 50
+    `,
+    [search, like],
+  );
+  res.json(rows);
+});
+
+ownersRouter.get('/:id', async (req, res) => {
+  const { rows } = await query('select * from owners where id = $1', [req.params.id]);
+  const owner = rows[0];
+  if (!owner) return res.status(404).json({ error: 'Not found' });
+  res.json(owner);
+});
+
+ownersRouter.post('/', async (req, res) => {
+  const { name, phone, email, address } = req.body || {};
+  if (!name) return res.status(400).json({ error: 'Name required' });
+  const { rows } = await query(
+    `
+    insert into owners (name, phone, email, address)
+    values ($1, $2, $3, $4)
+    returning *
+    `,
+    [name, phone || null, email || null, address || null],
+  );
+  res.status(201).json(rows[0]);
+});
+
+ownersRouter.put('/:id', async (req, res) => {
+  const { name, phone, email, address } = req.body || {};
+  const { rows } = await query(
+    `
+    update owners
+    set name = $1, phone = $2, email = $3, address = $4, updated_at = now()
+    where id = $5
+    returning *
+    `,
+    [name, phone || null, email || null, address || null, req.params.id],
+  );
+  const owner = rows[0];
+  if (!owner) return res.status(404).json({ error: 'Not found' });
+  res.json(owner);
+});
+
+ownersRouter.delete('/:id', async (req, res) => {
+  await query('delete from owners where id = $1', [req.params.id]);
+  res.json({ ok: true });
+});
+
