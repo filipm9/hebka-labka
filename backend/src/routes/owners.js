@@ -15,8 +15,7 @@ ownersRouter.get('/', async (req, res) => {
     from owners o
     left join dogs d on d.owner_id = o.id
     where ($1 = '' or 
-      o.name ilike $2 or 
-      o.phone ilike $2 or
+      o.name ilike $2 or
       exists (
         select 1 
         from dogs d2
@@ -45,29 +44,29 @@ ownersRouter.get('/:id', async (req, res) => {
 });
 
 ownersRouter.post('/', async (req, res) => {
-  const { name, phone, email, address } = req.body || {};
+  const { name, communication_methods, important_info } = req.body || {};
   if (!name) return res.status(400).json({ error: 'Name required' });
   const { rows } = await query(
     `
-    insert into owners (name, phone, email, address)
-    values ($1, $2, $3, $4)
+    insert into owners (name, communication_methods, important_info)
+    values ($1, $2, $3)
     returning *
     `,
-    [name, phone || null, email || null, address || null],
+    [name, JSON.stringify(communication_methods || []), important_info || null],
   );
   res.status(201).json(rows[0]);
 });
 
 ownersRouter.put('/:id', async (req, res) => {
-  const { name, phone, email, address } = req.body || {};
+  const { name, communication_methods, important_info } = req.body || {};
   const { rows } = await query(
     `
     update owners
-    set name = $1, phone = $2, email = $3, address = $4, updated_at = now()
-    where id = $5
+    set name = $1, communication_methods = $2, important_info = $3, updated_at = now()
+    where id = $4
     returning *
     `,
-    [name, phone || null, email || null, address || null, req.params.id],
+    [name, JSON.stringify(communication_methods || []), important_info || null, req.params.id],
   );
   const owner = rows[0];
   if (!owner) return res.status(404).json({ error: 'Not found' });

@@ -23,13 +23,12 @@ dogsRouter.get('/', async (req, res) => {
   const charTagsLower = charTags.length ? charTags.map((t) => t.toLowerCase()) : null;
   const { rows } = await query(
     `
-    select d.*, o.name as owner_name, o.phone as owner_phone
+    select d.*, o.name as owner_name
     from dogs d
     join owners o on o.id = d.owner_id
     where ($1 = '' or 
       d.name ilike $2 or 
-      o.name ilike $2 or 
-      o.phone ilike $2 or
+      o.name ilike $2 or
       exists (
         select 1 
         from unnest(d.grooming_tolerance::text[]) as tag
@@ -68,7 +67,7 @@ dogsRouter.get('/', async (req, res) => {
 dogsRouter.get('/:id', async (req, res) => {
   const { rows } = await query(
     `
-    select d.*, o.name as owner_name, o.phone as owner_phone
+    select d.*, o.name as owner_name
     from dogs d
     join owners o on o.id = d.owner_id
     where d.id = $1

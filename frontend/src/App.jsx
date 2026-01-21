@@ -707,12 +707,15 @@ export default function App() {
         <div className="space-y-6">
           <input
             className="w-full rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
-            placeholder="Hľadať majiteľov (meno alebo telefón)"
+            placeholder="Hľadať majiteľov (meno)"
             value={ownerSearch}
             onChange={(e) => setOwnerSearch(e.target.value)}
           />
           {!editingOwner && (
-            <OwnerForm onSubmit={(body) => createOwner.mutate(body)} />
+            <OwnerForm 
+              onSubmit={(body) => createOwner.mutate(body)}
+              onOpenTagsAdmin={() => setTab('tags')}
+            />
           )}
           {editingOwner && (
             <OwnerForm
@@ -721,6 +724,7 @@ export default function App() {
                 updateOwner.mutate({ id: editingOwner.id, body })
               }
               onCancel={() => setEditingOwner(null)}
+              onOpenTagsAdmin={() => setTab('tags')}
             />
           )}
           <div className="space-y-3">
@@ -733,9 +737,18 @@ export default function App() {
                 <div className="flex justify-between items-start gap-4">
                   <div className="space-y-1.5">
                     <p className="text-xl font-light text-beige-800">{owner.name}</p>
-                    <p className="text-sm text-beige-600">{owner.phone || 'Bez telefónu'}</p>
-                    {owner.email && <p className="text-sm text-beige-600">{owner.email}</p>}
-                    {owner.address && <p className="text-sm text-beige-600">{owner.address}</p>}
+                    {owner.communication_methods && owner.communication_methods.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {owner.communication_methods.map((method, idx) => (
+                          <span
+                            key={idx}
+                            className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium"
+                          >
+                            {method.method}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <p className="text-xs text-beige-400 mt-3">
                       Psy: {owner.dog_count || 0}
                     </p>
@@ -804,20 +817,46 @@ export default function App() {
             <div className="space-y-6">
               <div className="space-y-2">
                 <h3 className="text-2xl font-light text-beige-800">{selectedOwner.name}</h3>
-                {selectedOwner.phone && (
-                  <p className="text-sm text-beige-600 bg-sage-50/50 rounded-2xl px-4 py-2">
-                    <span className="text-beige-500">Telefón:</span> {selectedOwner.phone}
-                  </p>
+                {selectedOwner.communication_methods && selectedOwner.communication_methods.length > 0 && (
+                  <div className="bg-gradient-to-br from-blue-50/80 to-cyan-50/60 rounded-2xl p-4 border border-blue-100 space-y-3">
+                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider flex items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                      </svg>
+                      Spôsoby komunikácie
+                    </p>
+                    <div className="space-y-3">
+                      {selectedOwner.communication_methods.map((method, idx) => (
+                        <div key={idx} className="bg-white/60 rounded-xl p-3 border border-blue-100">
+                          <span className="text-sm font-medium text-blue-700">{method.method}</span>
+                          {method.details && (
+                            <div 
+                              className="prose prose-sm max-w-none text-blue-800 mt-2"
+                              dangerouslySetInnerHTML={{ __html: method.details }}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
-                {selectedOwner.email && (
-                  <p className="text-sm text-beige-600 bg-sage-50/50 rounded-2xl px-4 py-2">
-                    <span className="text-beige-500">Email:</span> {selectedOwner.email}
-                  </p>
-                )}
-                {selectedOwner.address && (
-                  <p className="text-sm text-beige-600 bg-sage-50/50 rounded-2xl px-4 py-2">
-                    <span className="text-beige-500">Adresa:</span> {selectedOwner.address}
-                  </p>
+                {selectedOwner.important_info && (
+                  <div className="bg-gradient-to-br from-amber-50 via-yellow-50/80 to-orange-50/60 rounded-2xl p-4 border-2 border-amber-200 shadow-sm space-y-3">
+                    <div className="flex items-center gap-2 text-amber-700">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                      </svg>
+                      <p className="text-xs font-bold uppercase tracking-wider">
+                        Dôležité info
+                      </p>
+                    </div>
+                    <div className="prose prose-sm max-w-none text-amber-900 bg-white/70 rounded-xl p-3 border border-amber-100">
+                      <div dangerouslySetInnerHTML={{ __html: selectedOwner.important_info }} />
+                    </div>
+                  </div>
                 )}
               </div>
               <div className="space-y-3 border-t border-beige-200 pt-4">

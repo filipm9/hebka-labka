@@ -116,9 +116,6 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
   });
   const [newOwner, setNewOwner] = useState({
     name: '',
-    phone: '',
-    email: '',
-    address: '',
   });
   const [isOwnerDropdownOpen, setIsOwnerDropdownOpen] = useState(false);
   const [isBreedDropdownOpen, setIsBreedDropdownOpen] = useState(false);
@@ -225,7 +222,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
     if (!form.owner_id) return 'Vyberte majiteľa';
     if (form.owner_id === 'new') return '+ Nový majiteľ';
     const owner = owners.find((o) => o.id === Number(form.owner_id));
-    return owner ? `${owner.name} (${owner.phone || 'bez telefónu'})` : 'Vyberte majiteľa';
+    return owner ? owner.name : 'Vyberte majiteľa';
   };
 
   const handleTagToggle = (tag) => {
@@ -399,7 +396,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
                           : 'text-beige-700 hover:bg-blush-50 hover:text-blush-700'
                       }`}
                     >
-                      {o.name} ({o.phone || 'bez telefónu'})
+                      {o.name}
                     </button>
                   ))}
                   <button
@@ -418,32 +415,13 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
             )}
           </div>
           {form.owner_id === 'new' && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-beige-50/50 rounded-2xl p-4">
+            <div className="bg-beige-50/50 rounded-2xl p-4">
               <input
-                className="rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
+                className="w-full rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
                 placeholder="Meno majiteľa *"
                 value={newOwner.name}
                 onChange={(e) => setNewOwner((o) => ({ ...o, name: e.target.value }))}
                 required
-              />
-              <input
-                className="rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
-                placeholder="Telefón"
-                value={newOwner.phone}
-                onChange={(e) => setNewOwner((o) => ({ ...o, phone: e.target.value }))}
-              />
-              <input
-                className="rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
-                placeholder="Email"
-                type="email"
-                value={newOwner.email}
-                onChange={(e) => setNewOwner((o) => ({ ...o, email: e.target.value }))}
-              />
-              <input
-                className="rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all sm:col-span-2"
-                placeholder="Adresa"
-                value={newOwner.address}
-                onChange={(e) => setNewOwner((o) => ({ ...o, address: e.target.value }))}
               />
             </div>
           )}

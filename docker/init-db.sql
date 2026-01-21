@@ -12,9 +12,8 @@ create table if not exists users (
 create table if not exists owners (
   id serial primary key,
   name text not null,
-  phone text,
-  email text,
-  address text,
+  communication_methods jsonb default '[]'::jsonb,
+  important_info text,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );

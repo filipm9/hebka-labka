@@ -6,6 +6,7 @@ const INITIAL_TAGS = ['Smrdí', 'Pĺzne', 'Kúše'];
 const INITIAL_CHARACTER_TAGS = ['Priateľský', 'Bojazlivý', 'Agresívny'];
 const INITIAL_BREEDS = ['Zlatý retriever', 'Labrador', 'Nemecký ovčiak', 'Pudel', 'Bígl', 'Yorkshirský teriér'];
 const INITIAL_COSMETICS = ['Šampón na citlivú pokožku', 'Kondicionér', 'Sprej na rozčesávanie', 'Parfum'];
+const INITIAL_COMMUNICATION_METHODS = ['WhatsApp', 'Instagram', 'Phone'];
 
 function getCustomTags() {
   const stored = localStorage.getItem('dog_groomer_custom_tags');
@@ -59,6 +60,19 @@ function saveCustomCosmetics(cosmetics) {
   localStorage.setItem('dog_groomer_custom_cosmetics', JSON.stringify(cosmetics));
 }
 
+function getCustomCommunicationMethods() {
+  const stored = localStorage.getItem('dog_groomer_communication_methods');
+  if (stored) {
+    return JSON.parse(stored);
+  }
+  saveCustomCommunicationMethods(INITIAL_COMMUNICATION_METHODS);
+  return INITIAL_COMMUNICATION_METHODS;
+}
+
+function saveCustomCommunicationMethods(methods) {
+  localStorage.setItem('dog_groomer_communication_methods', JSON.stringify(methods));
+}
+
 function toTags(value) {
   if (Array.isArray(value)) return value;
   if (!value) return [];
@@ -81,6 +95,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
   const [customCharacterTags, setCustomCharacterTags] = useState(getCustomCharacterTags());
   const [customBreeds, setCustomBreeds] = useState(getCustomBreeds());
   const [customCosmetics, setCustomCosmetics] = useState(getCustomCosmetics());
+  const [customCommunicationMethods, setCustomCommunicationMethods] = useState(getCustomCommunicationMethods());
   const [editingTag, setEditingTag] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [editingCharacterTag, setEditingCharacterTag] = useState(null);
@@ -89,10 +104,13 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
   const [editBreedValue, setEditBreedValue] = useState('');
   const [editingCosmetic, setEditingCosmetic] = useState(null);
   const [editCosmeticValue, setEditCosmeticValue] = useState('');
+  const [editingCommunicationMethod, setEditingCommunicationMethod] = useState(null);
+  const [editCommunicationMethodValue, setEditCommunicationMethodValue] = useState('');
   const [newTag, setNewTag] = useState('');
   const [newCharacterTag, setNewCharacterTag] = useState('');
   const [newBreed, setNewBreed] = useState('');
   const [newCosmetic, setNewCosmetic] = useState('');
+  const [newCommunicationMethod, setNewCommunicationMethod] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [cosmeticNotesModal, setCosmeticNotesModal] = useState(null);
@@ -110,6 +128,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
     setCustomCharacterTags(getCustomCharacterTags());
     setCustomBreeds(getCustomBreeds());
     setCustomCosmetics(getCustomCosmetics());
+    setCustomCommunicationMethods(getCustomCommunicationMethods());
   }, []);
 
   // --- Tags handlers ---
@@ -483,6 +502,121 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
   const handleCancelEditCharacterTag = () => {
     setEditingCharacterTag(null);
     setEditCharacterValue('');
+  };
+
+  // --- Communication Methods handlers ---
+  const handleAddCommunicationMethod = () => {
+    const val = newCommunicationMethod.trim();
+    if (!val) return;
+    if (customCommunicationMethods.includes(val)) {
+      showToast('Tento spôsob komunikácie už existuje.', 'error');
+      return;
+    }
+    const updated = [...customCommunicationMethods, val];
+    saveCustomCommunicationMethods(updated);
+    setCustomCommunicationMethods(updated);
+    setNewCommunicationMethod('');
+    window.dispatchEvent(new Event('communicationMethodsUpdated'));
+    showToast('Spôsob komunikácie bol pridaný');
+  };
+
+  const handleDeleteCommunicationMethod = async (method) => {
+    setConfirmDialog({
+      message: `Naozaj chcete vymazať spôsob komunikácie "${method}"? Tento spôsob bude odstránený zo všetkých majiteľov, ktorí ho majú.`,
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        setIsUpdating(true);
+        try {
+          const allOwners = await api.owners('');
+          const ownersToUpdate = allOwners.filter((owner) => {
+            const methods = owner.communication_methods || [];
+            return methods.some((m) => m.method === method);
+          });
+
+          for (const owner of ownersToUpdate) {
+            const methods = owner.communication_methods || [];
+            const updatedMethods = methods.filter((m) => m.method !== method);
+            await api.updateOwner(owner.id, {
+              name: owner.name,
+              communication_methods: updatedMethods,
+              important_info: owner.important_info,
+            });
+          }
+          
+          const updated = customCommunicationMethods.filter((m) => m !== method);
+          saveCustomCommunicationMethods(updated);
+          setCustomCommunicationMethods(updated);
+          window.dispatchEvent(new Event('communicationMethodsUpdated'));
+          if (onTagUpdate) onTagUpdate();
+          showToast('Spôsob komunikácie bol vymazaný');
+        } catch (error) {
+          console.error('Error deleting communication method:', error);
+          showToast('Chyba pri aktualizácii spôsobov komunikácie: ' + (error.message || 'Neznáma chyba'), 'error');
+        } finally {
+          setIsUpdating(false);
+        }
+      },
+      onCancel: () => setConfirmDialog(null),
+    });
+  };
+
+  const handleStartEditCommunicationMethod = (method) => {
+    setEditingCommunicationMethod(method);
+    setEditCommunicationMethodValue(method);
+  };
+
+  const handleSaveEditCommunicationMethod = async () => {
+    const val = editCommunicationMethodValue.trim();
+    if (!val) return;
+    if (val === editingCommunicationMethod) {
+      setEditingCommunicationMethod(null);
+      setEditCommunicationMethodValue('');
+      return;
+    }
+    if (customCommunicationMethods.includes(val)) {
+      showToast('Tento spôsob komunikácie už existuje.', 'error');
+      return;
+    }
+    
+    setIsUpdating(true);
+    try {
+      const allOwners = await api.owners('');
+      const ownersToUpdate = allOwners.filter((owner) => {
+        const methods = owner.communication_methods || [];
+        return methods.some((m) => m.method === editingCommunicationMethod);
+      });
+
+      for (const owner of ownersToUpdate) {
+        const methods = owner.communication_methods || [];
+        const updatedMethods = methods.map((m) =>
+          m.method === editingCommunicationMethod ? { ...m, method: val } : m
+        );
+        await api.updateOwner(owner.id, {
+          name: owner.name,
+          communication_methods: updatedMethods,
+          important_info: owner.important_info,
+        });
+      }
+      
+      const updated = customCommunicationMethods.map((m) => (m === editingCommunicationMethod ? val : m));
+      saveCustomCommunicationMethods(updated);
+      setCustomCommunicationMethods(updated);
+      setEditingCommunicationMethod(null);
+      setEditCommunicationMethodValue('');
+      window.dispatchEvent(new Event('communicationMethodsUpdated'));
+      if (onTagUpdate) onTagUpdate();
+      showToast('Spôsob komunikácie bol upravený');
+    } catch (error) {
+      console.error('Error updating communication methods:', error);
+      showToast('Chyba pri aktualizácii spôsobov komunikácie: ' + (error.message || 'Neznáma chyba'), 'error');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCancelEditCommunicationMethod = () => {
+    setEditingCommunicationMethod(null);
+    setEditCommunicationMethodValue('');
   };
 
   // --- Cosmetics handlers ---
@@ -895,6 +1029,120 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
               type="button"
               onClick={handleAddCharacterTag}
               className="px-6 rounded-2xl bg-violet-500 text-white text-sm font-medium hover:bg-violet-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
+              disabled={isUpdating}
+            >
+              Pridať
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Communication Methods Section */}
+      <div className="space-y-5 pt-6 border-t border-beige-200">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+            <label className="text-sm font-medium text-blue-700">
+              Spôsoby komunikácie
+            </label>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {customCommunicationMethods.length === 0 ? (
+              <p className="text-sm text-beige-400">Zatiaľ žiadne spôsoby komunikácie.</p>
+            ) : (
+              customCommunicationMethods.map((method) => (
+                <div
+                  key={method}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-medium border border-blue-200"
+                >
+                  {editingCommunicationMethod === method ? (
+                    <>
+                      <input
+                        type="text"
+                        value={editCommunicationMethodValue}
+                        onChange={(e) => setEditCommunicationMethodValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSaveEditCommunicationMethod();
+                          } else if (e.key === 'Escape') {
+                            handleCancelEditCommunicationMethod();
+                          }
+                        }}
+                        className="px-3 py-1 rounded-xl border border-blue-300 bg-white text-sm w-28 text-beige-800 focus:outline-none focus:border-blue-400"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSaveEditCommunicationMethod}
+                        className="text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-blue-50 transition-colors"
+                        title="Uložiť"
+                        disabled={isUpdating}
+                      >
+                        ✓
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelEditCommunicationMethod}
+                        className="text-beige-500 hover:text-beige-700 disabled:opacity-50 p-1 rounded-full hover:bg-beige-50 transition-colors"
+                        title="Zrušiť"
+                        disabled={isUpdating}
+                      >
+                        ×
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span>{method}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleStartEditCommunicationMethod(method)}
+                        className="text-blush-500 hover:text-blush-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
+                        title="Upraviť"
+                        disabled={isUpdating}
+                      >
+                        ✎
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCommunicationMethod(method)}
+                        className="text-blush-400 hover:text-blush-500 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
+                        title="Vymazať"
+                        disabled={isUpdating}
+                      >
+                        ×
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-blue-700">
+            Pridať nový spôsob komunikácie
+          </label>
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={newCommunicationMethod}
+              onChange={(e) => setNewCommunicationMethod(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddCommunicationMethod();
+                }
+              }}
+              placeholder="Názov (napr. WhatsApp, Instagram, Phone...)"
+              className="flex-1 rounded-2xl border border-blue-200 bg-white/80 px-4 py-3 text-beige-800 placeholder-blue-300 focus:bg-white focus:border-blue-400 transition-all"
+            />
+            <button
+              type="button"
+              onClick={handleAddCommunicationMethod}
+              className="px-6 rounded-2xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
               disabled={isUpdating}
             >
               Pridať
