@@ -76,7 +76,7 @@ function toTags(value) {
     .filter(Boolean);
 }
 
-export function TagsAdmin({ onClose, onTagUpdate }) {
+export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
   const [customTags, setCustomTags] = useState(getCustomTags());
   const [customCharacterTags, setCustomCharacterTags] = useState(getCustomCharacterTags());
   const [customBreeds, setCustomBreeds] = useState(getCustomBreeds());
@@ -95,7 +95,13 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
   const [newCosmetic, setNewCosmetic] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState(null);
-  const [alertMessage, setAlertMessage] = useState(null);
+
+  // Helper to show toast via parent
+  const showToast = (message, type = 'success') => {
+    if (onToast) {
+      onToast(message, type);
+    }
+  };
 
   useEffect(() => {
     setCustomTags(getCustomTags());
@@ -109,7 +115,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
     const val = newTag.trim();
     if (!val) return;
     if (customTags.includes(val)) {
-      setAlertMessage('Tento tag už existuje.');
+      showToast('Tento tag už existuje.', 'error');
       return;
     }
     const updated = [...customTags, val];
@@ -117,6 +123,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
     setCustomTags(updated);
     setNewTag('');
     window.dispatchEvent(new Event('tagsUpdated'));
+    showToast('Zdravotný tag bol pridaný');
   };
 
   const handleDeleteTag = async (tag) => {
@@ -155,9 +162,10 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
           setCustomTags(updated);
           window.dispatchEvent(new Event('tagsUpdated'));
           if (onTagUpdate) onTagUpdate();
+          showToast('Zdravotný tag bol vymazaný');
         } catch (error) {
           console.error('Error deleting tag:', error);
-          setAlertMessage('Chyba pri aktualizácii tagov: ' + (error.message || 'Neznáma chyba'));
+          showToast('Chyba pri aktualizácii tagov: ' + (error.message || 'Neznáma chyba'), 'error');
         } finally {
           setIsUpdating(false);
         }
@@ -180,7 +188,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
       return;
     }
     if (customTags.includes(val)) {
-      setAlertMessage('Tento tag už existuje.');
+      showToast('Tento tag už existuje.', 'error');
       return;
     }
     
@@ -217,9 +225,10 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
       setEditValue('');
       window.dispatchEvent(new Event('tagsUpdated'));
       if (onTagUpdate) onTagUpdate();
+      showToast('Zdravotný tag bol upravený');
     } catch (error) {
       console.error('Error updating tags:', error);
-      setAlertMessage('Chyba pri aktualizácii tagov: ' + (error.message || 'Neznáma chyba'));
+      showToast('Chyba pri aktualizácii tagov: ' + (error.message || 'Neznáma chyba'), 'error');
     } finally {
       setIsUpdating(false);
     }
@@ -235,7 +244,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
     const val = newBreed.trim();
     if (!val) return;
     if (customBreeds.includes(val)) {
-      setAlertMessage('Toto plemeno už existuje.');
+      showToast('Toto plemeno už existuje.', 'error');
       return;
     }
     const updated = [...customBreeds, val];
@@ -243,6 +252,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
     setCustomBreeds(updated);
     setNewBreed('');
     window.dispatchEvent(new Event('breedsUpdated'));
+    showToast('Plemeno bolo pridané');
   };
 
   const handleDeleteBreed = async (breed) => {
@@ -275,9 +285,10 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
           setCustomBreeds(updated);
           window.dispatchEvent(new Event('breedsUpdated'));
           if (onTagUpdate) onTagUpdate();
+          showToast('Plemeno bolo vymazané');
         } catch (error) {
           console.error('Error deleting breed:', error);
-          setAlertMessage('Chyba pri aktualizácii plemien: ' + (error.message || 'Neznáma chyba'));
+          showToast('Chyba pri aktualizácii plemien: ' + (error.message || 'Neznáma chyba'), 'error');
         } finally {
           setIsUpdating(false);
         }
@@ -300,7 +311,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
       return;
     }
     if (customBreeds.includes(val)) {
-      setAlertMessage('Toto plemeno už existuje.');
+      showToast('Toto plemeno už existuje.', 'error');
       return;
     }
     
@@ -331,9 +342,10 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
       setEditBreedValue('');
       window.dispatchEvent(new Event('breedsUpdated'));
       if (onTagUpdate) onTagUpdate();
+      showToast('Plemeno bolo upravené');
     } catch (error) {
       console.error('Error updating breed:', error);
-      setAlertMessage('Chyba pri aktualizácii plemien: ' + (error.message || 'Neznáma chyba'));
+      showToast('Chyba pri aktualizácii plemien: ' + (error.message || 'Neznáma chyba'), 'error');
     } finally {
       setIsUpdating(false);
     }
@@ -349,7 +361,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
     const val = newCharacterTag.trim();
     if (!val) return;
     if (customCharacterTags.includes(val)) {
-      setAlertMessage('Tento povahový tag už existuje.');
+      showToast('Tento povahový tag už existuje.', 'error');
       return;
     }
     const updated = [...customCharacterTags, val];
@@ -357,6 +369,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
     setCustomCharacterTags(updated);
     setNewCharacterTag('');
     window.dispatchEvent(new Event('characterTagsUpdated'));
+    showToast('Povahový tag bol pridaný');
   };
 
   const handleDeleteCharacterTag = async (tag) => {
@@ -394,9 +407,10 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
           setCustomCharacterTags(updated);
           window.dispatchEvent(new Event('characterTagsUpdated'));
           if (onTagUpdate) onTagUpdate();
+          showToast('Povahový tag bol vymazaný');
         } catch (error) {
           console.error('Error deleting character tag:', error);
-          setAlertMessage('Chyba pri aktualizácii tagov: ' + (error.message || 'Neznáma chyba'));
+          showToast('Chyba pri aktualizácii tagov: ' + (error.message || 'Neznáma chyba'), 'error');
         } finally {
           setIsUpdating(false);
         }
@@ -419,7 +433,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
       return;
     }
     if (customCharacterTags.includes(val)) {
-      setAlertMessage('Tento povahový tag už existuje.');
+      showToast('Tento povahový tag už existuje.', 'error');
       return;
     }
     
@@ -455,9 +469,10 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
       setEditCharacterValue('');
       window.dispatchEvent(new Event('characterTagsUpdated'));
       if (onTagUpdate) onTagUpdate();
+      showToast('Povahový tag bol upravený');
     } catch (error) {
       console.error('Error updating character tags:', error);
-      setAlertMessage('Chyba pri aktualizácii tagov: ' + (error.message || 'Neznáma chyba'));
+      showToast('Chyba pri aktualizácii tagov: ' + (error.message || 'Neznáma chyba'), 'error');
     } finally {
       setIsUpdating(false);
     }
@@ -473,7 +488,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
     const val = newCosmetic.trim();
     if (!val) return;
     if (customCosmetics.includes(val)) {
-      setAlertMessage('Táto kozmetika už existuje.');
+      showToast('Táto kozmetika už existuje.', 'error');
       return;
     }
     const updated = [...customCosmetics, val];
@@ -481,6 +496,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
     setCustomCosmetics(updated);
     setNewCosmetic('');
     window.dispatchEvent(new Event('cosmeticsUpdated'));
+    showToast('Kozmetický produkt bol pridaný');
   };
 
   const handleDeleteCosmetic = async (cosmetic) => {
@@ -519,9 +535,10 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
           setCustomCosmetics(updated);
           window.dispatchEvent(new Event('cosmeticsUpdated'));
           if (onTagUpdate) onTagUpdate();
+          showToast('Kozmetický produkt bol vymazaný');
         } catch (error) {
           console.error('Error deleting cosmetic:', error);
-          setAlertMessage('Chyba pri aktualizácii kozmetiky: ' + (error.message || 'Neznáma chyba'));
+          showToast('Chyba pri aktualizácii kozmetiky: ' + (error.message || 'Neznáma chyba'), 'error');
         } finally {
           setIsUpdating(false);
         }
@@ -544,7 +561,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
       return;
     }
     if (customCosmetics.includes(val)) {
-      setAlertMessage('Táto kozmetika už existuje.');
+      showToast('Táto kozmetika už existuje.', 'error');
       return;
     }
     
@@ -583,9 +600,10 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
       setEditCosmeticValue('');
       window.dispatchEvent(new Event('cosmeticsUpdated'));
       if (onTagUpdate) onTagUpdate();
+      showToast('Kozmetický produkt bol upravený');
     } catch (error) {
       console.error('Error updating cosmetic:', error);
-      setAlertMessage('Chyba pri aktualizácii kozmetiky: ' + (error.message || 'Neznáma chyba'));
+      showToast('Chyba pri aktualizácii kozmetiky: ' + (error.message || 'Neznáma chyba'), 'error');
     } finally {
       setIsUpdating(false);
     }
@@ -614,18 +632,6 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
       {isUpdating && (
         <div className="bg-sage-50 border border-sage-200 rounded-2xl p-4 text-sm text-sage-700">
           Aktualizujem hodnoty vo všetkých psoch...
-        </div>
-      )}
-
-      {alertMessage && (
-        <div className="bg-blush-50 border border-blush-200 rounded-2xl p-4 text-sm text-blush-700 flex items-center justify-between">
-          <span>{alertMessage}</span>
-          <button
-            onClick={() => setAlertMessage(null)}
-            className="text-blush-500 hover:text-blush-700 ml-4 p-1 rounded-full hover:bg-blush-100 transition-colors"
-          >
-            ×
-          </button>
         </div>
       )}
 
@@ -863,9 +869,16 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
       {/* Breeds Section */}
       <div className="space-y-5 pt-6 border-t border-beige-200">
         <div className="space-y-3">
-          <label className="text-sm font-medium text-beige-700">
-            Plemená
-          </label>
+          <div className="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+            <label className="text-sm font-medium text-amber-700">
+              Plemená
+            </label>
+          </div>
           <div className="flex flex-wrap gap-2">
             {customBreeds.length === 0 ? (
               <p className="text-sm text-beige-400">Zatiaľ žiadne plemená.</p>
@@ -873,7 +886,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
               customBreeds.map((breed) => (
                 <div
                   key={breed}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-blush-50 text-blush-700 text-sm font-medium border border-blush-200"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-amber-100 text-amber-700 text-sm font-medium border border-amber-200"
                 >
                   {editingBreed === breed ? (
                     <>
@@ -888,13 +901,13 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
                             handleCancelEditBreed();
                           }
                         }}
-                        className="px-3 py-1 rounded-xl border border-blush-300 bg-white text-sm w-36 text-beige-800 focus:outline-none focus:border-blush-400"
+                        className="px-3 py-1 rounded-xl border border-amber-300 bg-white text-sm w-36 text-beige-800 focus:outline-none focus:border-amber-400"
                         autoFocus
                       />
                       <button
                         type="button"
                         onClick={handleSaveEditBreed}
-                        className="text-blush-600 hover:text-blush-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-blush-100 transition-colors"
+                        className="text-amber-600 hover:text-amber-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-amber-50 transition-colors"
                         title="Uložiť"
                         disabled={isUpdating}
                       >
@@ -916,7 +929,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
                       <button
                         type="button"
                         onClick={() => handleStartEditBreed(breed)}
-                        className="text-blush-500 hover:text-blush-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-blush-100 transition-colors"
+                        className="text-amber-500 hover:text-amber-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-amber-50 transition-colors"
                         title="Upraviť"
                         disabled={isUpdating}
                       >
@@ -925,7 +938,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
                       <button
                         type="button"
                         onClick={() => handleDeleteBreed(breed)}
-                        className="text-blush-400 hover:text-blush-500 disabled:opacity-50 p-1 rounded-full hover:bg-blush-100 transition-colors"
+                        className="text-amber-400 hover:text-amber-500 disabled:opacity-50 p-1 rounded-full hover:bg-amber-50 transition-colors"
                         title="Vymazať"
                         disabled={isUpdating}
                       >
@@ -940,7 +953,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
         </div>
 
         <div className="space-y-3">
-          <label className="text-sm font-medium text-beige-700">
+          <label className="text-sm font-medium text-amber-700">
             Pridať nové plemeno
           </label>
           <div className="flex gap-3">
@@ -955,12 +968,12 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
                 }
               }}
               placeholder="Názov plemena"
-              className="flex-1 rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
+              className="flex-1 rounded-2xl border border-amber-200 bg-white/80 px-4 py-3 text-beige-800 placeholder-amber-300 focus:bg-white focus:border-amber-400 transition-all"
             />
             <button
               type="button"
               onClick={handleAddBreed}
-              className="px-6 rounded-2xl bg-blush-400 text-white text-sm font-medium hover:bg-blush-500 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
+              className="px-6 rounded-2xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
               disabled={isUpdating}
             >
               Pridať
@@ -974,8 +987,8 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.54Z"/>
-              <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.54Z"/>
+              <path d="M12 2v20M2 12h20M12 2a10 10 0 0 1 10 10M12 2a10 10 0 0 0-10 10M12 22a10 10 0 0 1-10-10M12 22a10 10 0 0 0 10-10"/>
+              <circle cx="12" cy="12" r="2"/>
             </svg>
             <label className="text-sm font-medium text-rose-700">
               Kozmetické produkty

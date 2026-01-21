@@ -100,6 +100,20 @@ export default function App() {
   const [newPassword, setNewPassword] = useState('');
   const [changePasswordError, setChangePasswordError] = useState(null);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [toast, setToast] = useState(null); // { message: string, type: 'success' | 'error' }
+
+  // Helper to show toast
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+  };
+
+  // Auto-dismiss toast after 3 seconds
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const availableTags = useMemo(() => getAvailableTags(), [tagsRefreshKey]);
   const availableCharacterTags = useMemo(() => getAvailableCharacterTags(), [characterTagsRefreshKey]);
@@ -147,15 +161,26 @@ export default function App() {
 
   const createOwner = useMutation({
     mutationFn: api.createOwner,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['owners'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['owners'] });
+      showToast('Majiteľ bol úspešne pridaný');
+    },
+    onError: (error) => {
+      showToast(error.message || 'Chyba pri vytváraní majiteľa', 'error');
+    },
   });
 
   const updateOwner = useMutation({
     mutationFn: ({ id, body }) => api.updateOwner(id, body),
-    onSuccess: () => {
+    onSuccess: (updatedOwner) => {
       queryClient.invalidateQueries({ queryKey: ['owners'] });
       queryClient.invalidateQueries({ queryKey: ['dogs'] });
-      setEditingOwner(null);
+      // Keep editing, just show toast
+      setEditingOwner(updatedOwner);
+      showToast('Zmeny boli uložené');
+    },
+    onError: (error) => {
+      showToast(error.message || 'Chyba pri aktualizácii majiteľa', 'error');
     },
   });
 
@@ -164,6 +189,10 @@ export default function App() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['owners'] });
       queryClient.invalidateQueries({ queryKey: ['dogs'] });
+      showToast('Majiteľ bol vymazaný');
+    },
+    onError: (error) => {
+      showToast(error.message || 'Chyba pri mazaní majiteľa', 'error');
     },
   });
 
@@ -176,24 +205,40 @@ export default function App() {
       }
       return api.createDog({ ...dog, owner_id: ownerId });
     },
-    onSuccess: () => {
+    onSuccess: (createdDog) => {
       queryClient.invalidateQueries({ queryKey: ['dogs'] });
       queryClient.invalidateQueries({ queryKey: ['owners'] });
-      setEditingDog(null);
+      // Keep editing the newly created dog (now with ID for updates)
+      setEditingDog(createdDog);
+      showToast('Pes bol úspešne uložený');
+    },
+    onError: (error) => {
+      showToast(error.message || 'Chyba pri vytváraní psa', 'error');
     },
   });
 
   const updateDog = useMutation({
     mutationFn: ({ id, body }) => api.updateDog(id, body),
-    onSuccess: () => {
+    onSuccess: (updatedDog) => {
       queryClient.invalidateQueries({ queryKey: ['dogs'] });
-      setEditingDog(null);
+      // Keep editing, just show toast
+      setEditingDog(updatedDog);
+      showToast('Zmeny boli uložené');
+    },
+    onError: (error) => {
+      showToast(error.message || 'Chyba pri aktualizácii psa', 'error');
     },
   });
 
   const deleteDog = useMutation({
     mutationFn: api.deleteDog,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['dogs'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dogs'] });
+      showToast('Pes bol vymazaný');
+    },
+    onError: (error) => {
+      showToast(error.message || 'Chyba pri mazaní psa', 'error');
+    },
   });
 
   const changePassword = useMutation({
@@ -203,9 +248,11 @@ export default function App() {
       setCurrentPassword('');
       setNewPassword('');
       setChangePasswordError(null);
+      showToast('Heslo bolo úspešne zmenené');
     },
     onError: (error) => {
       setChangePasswordError(error.message);
+      showToast(error.message || 'Chyba pri zmene hesla', 'error');
     },
   });
 
@@ -501,9 +548,17 @@ export default function App() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-beige-700">
                     {selectedDog.breed && (
-                      <p className="bg-sage-50/50 rounded-2xl px-4 py-2">
-                        <span className="text-beige-500">Plemeno:</span> {selectedDog.breed}
-                      </p>
+                      <div className="bg-gradient-to-br from-amber-50/80 to-orange-50/60 rounded-2xl px-4 py-3 border border-amber-100">
+                        <div className="flex items-center gap-2 text-amber-600 mb-1">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
+                            <path d="M2 12l10 5 10-5"/>
+                          </svg>
+                          <span className="text-xs font-semibold uppercase tracking-wider">Plemeno</span>
+                        </div>
+                        <p className="text-amber-800 font-medium">{selectedDog.breed}</p>
+                      </div>
                     )}
                     {selectedDog.weight && (
                       <p className="bg-sage-50/50 rounded-2xl px-4 py-2">
@@ -579,8 +634,8 @@ export default function App() {
                     <div className="bg-gradient-to-br from-rose-50/80 to-pink-50/60 rounded-2xl p-4 border border-rose-100 space-y-4">
                       <div className="flex items-center gap-2 text-rose-600">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.54Z"/>
-                          <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.54Z"/>
+                          <path d="M12 2v20M2 12h20M12 2a10 10 0 0 1 10 10M12 2a10 10 0 0 0-10 10M12 22a10 10 0 0 1-10-10M12 22a10 10 0 0 0 10-10"/>
+                          <circle cx="12" cy="12" r="2"/>
                         </svg>
                         <p className="text-xs font-semibold uppercase tracking-wider">
                           Kozmetika
@@ -713,6 +768,7 @@ export default function App() {
             onTagUpdate={() => {
               queryClient.invalidateQueries({ queryKey: ['dogs'] });
             }}
+            onToast={showToast}
           />
         </div>
       )}
@@ -896,6 +952,48 @@ export default function App() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast notification */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
+          <div className={`px-5 py-3 rounded-2xl shadow-lg flex items-center gap-3 ${
+            toast.type === 'error' 
+              ? 'bg-blush-500 text-white' 
+              : 'bg-emerald-500 text-white'
+          }`}>
+            {toast.type === 'error' ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+            ) : (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            )}
+            <span className="font-medium">{toast.message}</span>
           </div>
         </div>
       )}

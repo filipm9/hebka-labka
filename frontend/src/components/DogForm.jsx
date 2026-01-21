@@ -316,6 +316,24 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
 
   return (
     <form onSubmit={handleSubmit} className="card space-y-6">
+      {/* Duplicate buttons at top for better UX */}
+      <div className="flex gap-3 pb-4 border-b border-beige-200">
+        <button
+          type="submit"
+          className="flex-1 bg-blush-400 text-white font-medium rounded-2xl py-3 hover:bg-blush-500 shadow-sm hover:shadow-md transition-all"
+        >
+          Uložiť psa
+        </button>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="text-beige-600 hover:text-beige-700 px-6 py-3 rounded-2xl hover:bg-beige-50 transition-colors"
+          >
+            Zrušiť
+          </button>
+        )}
+      </div>
       <div className="space-y-3">
         <label className="text-sm font-medium text-beige-700">Majiteľ</label>
         <div className="grid grid-cols-1 gap-3">
@@ -442,22 +460,29 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-beige-700">Plemeno</label>
+            <label className="text-sm font-medium text-beige-700 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+                <path d="M2 12l10 5 10-5"/>
+              </svg>
+              Plemeno
+            </label>
             <div className="relative" ref={breedDropdownRef}>
               <button
                 type="button"
                 onClick={() => setIsBreedDropdownOpen(!isBreedDropdownOpen)}
                 className={`w-full rounded-2xl border px-4 py-3 pr-10 text-left text-beige-800 transition-all ${
                   isBreedDropdownOpen
-                    ? 'bg-white border-blush-300 ring-2 ring-blush-200'
-                    : 'border-beige-300 bg-white/80 hover:bg-white focus:bg-white focus:border-blush-300'
+                    ? 'bg-white border-amber-300 ring-2 ring-amber-200'
+                    : 'border-amber-200 bg-white/80 hover:bg-white focus:bg-white focus:border-amber-300'
                 } ${!form.breed ? 'text-beige-400' : ''}`}
               >
                 {form.breed || 'Vyberte plemeno'}
               </button>
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg
-                  className={`w-5 h-5 text-beige-500 transition-transform ${isBreedDropdownOpen ? 'rotate-180' : ''}`}
+                  className={`w-5 h-5 text-amber-500 transition-transform ${isBreedDropdownOpen ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -472,7 +497,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
                 </svg>
               </div>
               {isBreedDropdownOpen && (
-                <div className="absolute z-10 w-full mt-2 bg-white rounded-2xl border border-beige-300 shadow-lg overflow-hidden">
+                <div className="absolute z-10 w-full mt-2 bg-white rounded-2xl border border-amber-200 shadow-lg overflow-hidden">
                   <div className="max-h-60 overflow-y-auto">
                     <button
                       type="button"
@@ -482,8 +507,8 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
                       }}
                       className={`w-full text-left px-4 py-3 text-sm transition-colors ${
                         !form.breed
-                          ? 'bg-blush-50 text-blush-700'
-                          : 'text-beige-700 hover:bg-blush-50 hover:text-blush-700'
+                          ? 'bg-amber-50 text-amber-700'
+                          : 'text-beige-700 hover:bg-amber-50 hover:text-amber-700'
                       }`}
                     >
                       Bez plemena
@@ -498,8 +523,8 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
                         }}
                         className={`w-full text-left px-4 py-3 text-sm transition-colors ${
                           form.breed === breed
-                            ? 'bg-blush-50 text-blush-700'
-                            : 'text-beige-700 hover:bg-blush-50 hover:text-blush-700'
+                            ? 'bg-amber-50 text-amber-700'
+                            : 'text-beige-700 hover:bg-amber-50 hover:text-amber-700'
                         }`}
                       >
                         {breed}
@@ -1106,8 +1131,8 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
         <div className="relative flex justify-center">
           <span className="bg-white px-4 py-1 text-sm font-semibold text-rose-600 uppercase tracking-wider flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.54Z"/>
-              <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.54Z"/>
+              <path d="M12 2v20M2 12h20M12 2a10 10 0 0 1 10 10M12 2a10 10 0 0 0-10 10M12 22a10 10 0 0 1-10-10M12 22a10 10 0 0 0 10-10"/>
+              <circle cx="12" cy="12" r="2"/>
             </svg>
             Kozmetika
           </span>
