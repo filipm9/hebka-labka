@@ -3,19 +3,32 @@ import { api } from '../api/client.js';
 import { ConfirmDialog } from './ConfirmDialog.jsx';
 
 const INITIAL_TAGS = ['Smrdí', 'Pĺzne', 'Kúše'];
+const INITIAL_BREEDS = ['Zlatý retriever', 'Labrador', 'Nemecký ovčiak', 'Pudel', 'Bígl', 'Yorkshirský teriér'];
 
 function getCustomTags() {
   const stored = localStorage.getItem('dog_groomer_custom_tags');
   if (stored) {
     return JSON.parse(stored);
   }
-  // Initialize with default tags if no tags exist
   saveCustomTags(INITIAL_TAGS);
   return INITIAL_TAGS;
 }
 
 function saveCustomTags(tags) {
   localStorage.setItem('dog_groomer_custom_tags', JSON.stringify(tags));
+}
+
+function getCustomBreeds() {
+  const stored = localStorage.getItem('dog_groomer_custom_breeds');
+  if (stored) {
+    return JSON.parse(stored);
+  }
+  saveCustomBreeds(INITIAL_BREEDS);
+  return INITIAL_BREEDS;
+}
+
+function saveCustomBreeds(breeds) {
+  localStorage.setItem('dog_groomer_custom_breeds', JSON.stringify(breeds));
 }
 
 function toTags(value) {
@@ -37,17 +50,23 @@ function toTags(value) {
 
 export function TagsAdmin({ onClose, onTagUpdate }) {
   const [customTags, setCustomTags] = useState(getCustomTags());
+  const [customBreeds, setCustomBreeds] = useState(getCustomBreeds());
   const [editingTag, setEditingTag] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const [editingBreed, setEditingBreed] = useState(null);
+  const [editBreedValue, setEditBreedValue] = useState('');
   const [newTag, setNewTag] = useState('');
+  const [newBreed, setNewBreed] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [alertMessage, setAlertMessage] = useState(null);
 
   useEffect(() => {
     setCustomTags(getCustomTags());
+    setCustomBreeds(getCustomBreeds());
   }, []);
 
+  // --- Tags handlers ---
   const handleAddTag = () => {
     const val = newTag.trim();
     if (!val) return;
@@ -69,10 +88,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
         setConfirmDialog(null);
         setIsUpdating(true);
         try {
-          // Fetch all dogs
           const allDogs = await api.dogs('');
-          
-          // Update all dogs that have this tag
           const updatePromises = allDogs
             .filter((dog) => {
               const tags = toTags(dog.grooming_tolerance);
@@ -104,12 +120,12 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
     });
   };
 
-  const handleStartEdit = (tag) => {
+  const handleStartEditTag = (tag) => {
     setEditingTag(tag);
     setEditValue(tag);
   };
 
-  const handleSaveEdit = async () => {
+  const handleSaveEditTag = async () => {
     const val = editValue.trim();
     if (!val) return;
     if (val === editingTag) {
@@ -124,10 +140,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
     
     setIsUpdating(true);
     try {
-      // Fetch all dogs
       const allDogs = await api.dogs('');
-      
-      // Update all dogs that have the old tag
       const updatePromises = allDogs
         .filter((dog) => {
           const tags = toTags(dog.grooming_tolerance);
@@ -158,15 +171,115 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
     }
   };
 
-  const handleCancelEdit = () => {
+  const handleCancelEditTag = () => {
     setEditingTag(null);
     setEditValue('');
+  };
+
+  // --- Breeds handlers ---
+  const handleAddBreed = () => {
+    const val = newBreed.trim();
+    if (!val) return;
+    if (customBreeds.includes(val)) {
+      setAlertMessage('Toto plemeno už existuje.');
+      return;
+    }
+    const updated = [...customBreeds, val];
+    saveCustomBreeds(updated);
+    setCustomBreeds(updated);
+    setNewBreed('');
+    window.dispatchEvent(new Event('breedsUpdated'));
+  };
+
+  const handleDeleteBreed = async (breed) => {
+    setConfirmDialog({
+      message: `Naozaj chcete vymazať plemeno "${breed}"? Psom s týmto plemenom sa plemeno vymaže.`,
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        setIsUpdating(true);
+        try {
+          const allDogs = await api.dogs('');
+          const updatePromises = allDogs
+            .filter((dog) => dog.breed === breed)
+            .map(async (dog) => {
+              return api.updateDog(dog.id, {
+                ...dog,
+                breed: null,
+              });
+            });
+
+          await Promise.all(updatePromises);
+          
+          const updated = customBreeds.filter((b) => b !== breed);
+          saveCustomBreeds(updated);
+          setCustomBreeds(updated);
+          window.dispatchEvent(new Event('breedsUpdated'));
+          if (onTagUpdate) onTagUpdate();
+        } catch (error) {
+          setAlertMessage('Chyba pri aktualizácii plemien: ' + error.message);
+        } finally {
+          setIsUpdating(false);
+        }
+      },
+      onCancel: () => setConfirmDialog(null),
+    });
+  };
+
+  const handleStartEditBreed = (breed) => {
+    setEditingBreed(breed);
+    setEditBreedValue(breed);
+  };
+
+  const handleSaveEditBreed = async () => {
+    const val = editBreedValue.trim();
+    if (!val) return;
+    if (val === editingBreed) {
+      setEditingBreed(null);
+      setEditBreedValue('');
+      return;
+    }
+    if (customBreeds.includes(val)) {
+      setAlertMessage('Toto plemeno už existuje.');
+      return;
+    }
+    
+    setIsUpdating(true);
+    try {
+      const allDogs = await api.dogs('');
+      const updatePromises = allDogs
+        .filter((dog) => dog.breed === editingBreed)
+        .map(async (dog) => {
+          return api.updateDog(dog.id, {
+            ...dog,
+            breed: val,
+          });
+        });
+
+      await Promise.all(updatePromises);
+      
+      const updated = customBreeds.map((b) => (b === editingBreed ? val : b));
+      saveCustomBreeds(updated);
+      setCustomBreeds(updated);
+      setEditingBreed(null);
+      setEditBreedValue('');
+      window.dispatchEvent(new Event('breedsUpdated'));
+      if (onTagUpdate) onTagUpdate();
+    } catch (error) {
+      setAlertMessage('Chyba pri aktualizácii plemien: ' + error.message);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCancelEditBreed = () => {
+    setEditingBreed(null);
+    setEditBreedValue('');
   };
 
   return (
     <div className="card space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-light text-beige-800">Správa tagov</h2>
+        <h2 className="text-2xl font-light text-beige-800">Konfigurácia hodnôt</h2>
         {onClose && (
           <button
             onClick={onClose}
@@ -180,7 +293,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
 
       {isUpdating && (
         <div className="bg-sage-50 border border-sage-200 rounded-2xl p-4 text-sm text-sage-700">
-          Aktualizujem tagy vo všetkých psoch...
+          Aktualizujem hodnoty vo všetkých psoch...
         </div>
       )}
 
@@ -196,6 +309,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
         </div>
       )}
 
+      {/* Tags Section */}
       <div className="space-y-5">
         <div className="space-y-3">
           <label className="text-sm font-medium text-beige-700">
@@ -218,9 +332,9 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
                         onChange={(e) => setEditValue(e.target.value)}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
-                            handleSaveEdit();
+                            handleSaveEditTag();
                           } else if (e.key === 'Escape') {
-                            handleCancelEdit();
+                            handleCancelEditTag();
                           }
                         }}
                         className="px-3 py-1 rounded-xl border border-sage-300 bg-white text-sm w-28 text-beige-800 focus:outline-none focus:border-blush-300"
@@ -228,7 +342,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
                       />
                       <button
                         type="button"
-                        onClick={handleSaveEdit}
+                        onClick={handleSaveEditTag}
                         className="text-sage-600 hover:text-sage-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-sage-50 transition-colors"
                         title="Uložiť"
                         disabled={isUpdating}
@@ -237,7 +351,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
                       </button>
                       <button
                         type="button"
-                        onClick={handleCancelEdit}
+                        onClick={handleCancelEditTag}
                         className="text-beige-500 hover:text-beige-700 disabled:opacity-50 p-1 rounded-full hover:bg-beige-50 transition-colors"
                         title="Zrušiť"
                         disabled={isUpdating}
@@ -250,7 +364,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
                       <span>{tag}</span>
                       <button
                         type="button"
-                        onClick={() => handleStartEdit(tag)}
+                        onClick={() => handleStartEditTag(tag)}
                         className="text-blush-500 hover:text-blush-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
                         title="Upraviť"
                         disabled={isUpdating}
@@ -274,7 +388,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
           </div>
         </div>
 
-        <div className="space-y-3 pt-4 border-t border-beige-200">
+        <div className="space-y-3">
           <label className="text-sm font-medium text-beige-700">
             Pridať nový tag
           </label>
@@ -295,6 +409,115 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
             <button
               type="button"
               onClick={handleAddTag}
+              className="px-6 rounded-2xl bg-blush-400 text-white text-sm font-medium hover:bg-blush-500 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
+              disabled={isUpdating}
+            >
+              Pridať
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Breeds Section */}
+      <div className="space-y-5 pt-6 border-t border-beige-200">
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-beige-700">
+            Plemená
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {customBreeds.length === 0 ? (
+              <p className="text-sm text-beige-400">Zatiaľ žiadne plemená.</p>
+            ) : (
+              customBreeds.map((breed) => (
+                <div
+                  key={breed}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-blush-50 text-blush-700 text-sm font-medium border border-blush-200"
+                >
+                  {editingBreed === breed ? (
+                    <>
+                      <input
+                        type="text"
+                        value={editBreedValue}
+                        onChange={(e) => setEditBreedValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSaveEditBreed();
+                          } else if (e.key === 'Escape') {
+                            handleCancelEditBreed();
+                          }
+                        }}
+                        className="px-3 py-1 rounded-xl border border-blush-300 bg-white text-sm w-36 text-beige-800 focus:outline-none focus:border-blush-400"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSaveEditBreed}
+                        className="text-blush-600 hover:text-blush-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-blush-100 transition-colors"
+                        title="Uložiť"
+                        disabled={isUpdating}
+                      >
+                        ✓
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelEditBreed}
+                        className="text-beige-500 hover:text-beige-700 disabled:opacity-50 p-1 rounded-full hover:bg-beige-50 transition-colors"
+                        title="Zrušiť"
+                        disabled={isUpdating}
+                      >
+                        ×
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span>{breed}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleStartEditBreed(breed)}
+                        className="text-blush-500 hover:text-blush-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-blush-100 transition-colors"
+                        title="Upraviť"
+                        disabled={isUpdating}
+                      >
+                        ✎
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteBreed(breed)}
+                        className="text-blush-400 hover:text-blush-500 disabled:opacity-50 p-1 rounded-full hover:bg-blush-100 transition-colors"
+                        title="Vymazať"
+                        disabled={isUpdating}
+                      >
+                        ×
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-beige-700">
+            Pridať nové plemeno
+          </label>
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={newBreed}
+              onChange={(e) => setNewBreed(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddBreed();
+                }
+              }}
+              placeholder="Názov plemena"
+              className="flex-1 rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
+            />
+            <button
+              type="button"
+              onClick={handleAddBreed}
               className="px-6 rounded-2xl bg-blush-400 text-white text-sm font-medium hover:bg-blush-500 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
               disabled={isUpdating}
             >

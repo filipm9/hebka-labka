@@ -214,7 +214,7 @@ export default function App() {
             }`}
             onClick={() => setTab('tags')}
           >
-            Tagy
+            Konfigurácia hodnôt
           </button>
           <button
             className={`px-4 py-2 rounded-xl text-xs font-medium transition-all ${

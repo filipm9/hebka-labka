@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 const INITIAL_TAGS = ['Smrdí', 'Pĺzne', 'Kúše'];
+const INITIAL_BREEDS = ['Zlatý retriever', 'Labrador', 'Nemecký ovčiak', 'Pudel', 'Bígl', 'Yorkshirský teriér'];
 
 function getAvailableTags() {
   const stored = localStorage.getItem('dog_groomer_custom_tags');
@@ -14,6 +15,16 @@ function getAvailableTags() {
 
 function saveCustomTags(tags) {
   localStorage.setItem('dog_groomer_custom_tags', JSON.stringify(tags));
+}
+
+function getAvailableBreeds() {
+  const stored = localStorage.getItem('dog_groomer_custom_breeds');
+  if (stored) {
+    return JSON.parse(stored);
+  }
+  // Initialize with default breeds if no breeds exist
+  localStorage.setItem('dog_groomer_custom_breeds', JSON.stringify(INITIAL_BREEDS));
+  return INITIAL_BREEDS;
 }
 
 
@@ -54,7 +65,9 @@ function ageToDate(age) {
 
 export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }) {
   const [tagRefreshKey, setTagRefreshKey] = useState(0);
+  const [breedRefreshKey, setBreedRefreshKey] = useState(0);
   const availableTags = getAvailableTags();
+  const availableBreeds = getAvailableBreeds();
   
   // Force re-render when tags are updated (tagRefreshKey changes)
   // This ensures availableTags is recalculated
@@ -74,18 +87,25 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
     address: '',
   });
   const [isOwnerDropdownOpen, setIsOwnerDropdownOpen] = useState(false);
+  const [isBreedDropdownOpen, setIsBreedDropdownOpen] = useState(false);
   const ownerDropdownRef = useRef(null);
+  const breedDropdownRef = useRef(null);
   const notesRef = useRef(null);
 
   useEffect(() => {
     const handleStorageChange = () => {
       setTagRefreshKey((k) => k + 1);
+      setBreedRefreshKey((k) => k + 1);
     };
+    const handleTagsUpdated = () => setTagRefreshKey((k) => k + 1);
+    const handleBreedsUpdated = () => setBreedRefreshKey((k) => k + 1);
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('tagsUpdated', handleStorageChange);
+    window.addEventListener('tagsUpdated', handleTagsUpdated);
+    window.addEventListener('breedsUpdated', handleBreedsUpdated);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('tagsUpdated', handleStorageChange);
+      window.removeEventListener('tagsUpdated', handleTagsUpdated);
+      window.removeEventListener('breedsUpdated', handleBreedsUpdated);
     };
   }, []);
 
@@ -94,14 +114,17 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
       if (ownerDropdownRef.current && !ownerDropdownRef.current.contains(event.target)) {
         setIsOwnerDropdownOpen(false);
       }
+      if (breedDropdownRef.current && !breedDropdownRef.current.contains(event.target)) {
+        setIsBreedDropdownOpen(false);
+      }
     };
-    if (isOwnerDropdownOpen) {
+    if (isOwnerDropdownOpen || isBreedDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOwnerDropdownOpen]);
+  }, [isOwnerDropdownOpen, isBreedDropdownOpen]);
 
   useEffect(() => {
     if (initial) {
@@ -308,12 +331,72 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
             <label className="text-sm font-medium text-beige-700">Plemeno</label>
-            <input
-              name="breed"
-              value={form.breed}
-              onChange={handleChange}
-              className="w-full rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
-            />
+            <div className="relative" ref={breedDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsBreedDropdownOpen(!isBreedDropdownOpen)}
+                className={`w-full rounded-2xl border px-4 py-3 pr-10 text-left text-beige-800 transition-all ${
+                  isBreedDropdownOpen
+                    ? 'bg-white border-blush-300 ring-2 ring-blush-200'
+                    : 'border-beige-300 bg-white/80 hover:bg-white focus:bg-white focus:border-blush-300'
+                } ${!form.breed ? 'text-beige-400' : ''}`}
+              >
+                {form.breed || 'Vyberte plemeno'}
+              </button>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg
+                  className={`w-5 h-5 text-beige-500 transition-transform ${isBreedDropdownOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+              {isBreedDropdownOpen && (
+                <div className="absolute z-10 w-full mt-2 bg-white rounded-2xl border border-beige-300 shadow-lg overflow-hidden">
+                  <div className="max-h-60 overflow-y-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForm((f) => ({ ...f, breed: '' }));
+                        setIsBreedDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 text-sm transition-colors ${
+                        !form.breed
+                          ? 'bg-blush-50 text-blush-700'
+                          : 'text-beige-700 hover:bg-blush-50 hover:text-blush-700'
+                      }`}
+                    >
+                      Bez plemena
+                    </button>
+                    {availableBreeds.map((breed) => (
+                      <button
+                        key={breed}
+                        type="button"
+                        onClick={() => {
+                          setForm((f) => ({ ...f, breed }));
+                          setIsBreedDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-3 text-sm transition-colors ${
+                          form.breed === breed
+                            ? 'bg-blush-50 text-blush-700'
+                            : 'text-beige-700 hover:bg-blush-50 hover:text-blush-700'
+                        }`}
+                      >
+                        {breed}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-beige-700">Hmotnosť (kg)</label>
