@@ -8,24 +8,7 @@ import { OwnerForm } from './components/OwnerForm.jsx';
 import { TagsAdmin } from './components/TagsAdmin.jsx';
 import { UsersAdmin } from './components/UsersAdmin.jsx';
 import { ConfirmDialog } from './components/ConfirmDialog.jsx';
-
-function toTags(value) {
-  if (Array.isArray(value)) return value;
-  if (!value) return [];
-  // Handle PostgreSQL array format: {tag1,tag2} or comma-separated string
-  const str = String(value).trim();
-  if (str.startsWith('{') && str.endsWith('}')) {
-    return str
-      .slice(1, -1)
-      .split(',')
-      .map((v) => v.trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1'))
-      .filter(Boolean);
-  }
-  return str
-    .split(',')
-    .map((v) => v.trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1'))
-    .filter(Boolean);
-}
+import { toTags, sanitizeHtml } from './utils/helpers.js';
 
 function useAuth() {
   const queryClient = useQueryClient();
@@ -635,7 +618,7 @@ export default function App() {
                       )}
                       {selectedDog.health_notes && (
                         <div className="prose prose-sm max-w-none text-sand-800 bg-white/60 rounded-xl p-3">
-                          <div dangerouslySetInnerHTML={{ __html: selectedDog.health_notes }} />
+                          <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedDog.health_notes) }} />
                         </div>
                       )}
                     </div>
@@ -668,7 +651,7 @@ export default function App() {
                       )}
                       {selectedDog.character_notes && (
                         <div className="prose prose-sm max-w-none text-sand-800 bg-white/60 rounded-xl p-3">
-                          <div dangerouslySetInnerHTML={{ __html: selectedDog.character_notes }} />
+                          <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedDog.character_notes) }} />
                         </div>
                       )}
                     </div>
@@ -714,7 +697,7 @@ export default function App() {
                         </p>
                       </div>
                       <div className="prose prose-sm max-w-none text-sand-900 bg-white/70 rounded-xl p-3 border border-peach-200">
-                        <div dangerouslySetInnerHTML={{ __html: selectedDog.behavior_notes }} />
+                        <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedDog.behavior_notes) }} />
                       </div>
                     </div>
                   )}
@@ -1010,7 +993,7 @@ export default function App() {
                           {method.details && (
                             <div 
                               className="prose prose-sm max-w-none text-sand-800 mt-2"
-                              dangerouslySetInnerHTML={{ __html: method.details }}
+                              dangerouslySetInnerHTML={{ __html: sanitizeHtml(method.details) }}
                             />
                           )}
                         </div>
@@ -1032,7 +1015,7 @@ export default function App() {
                       </p>
                     </div>
                     <div className="prose prose-sm max-w-none text-sand-900 bg-white/70 rounded-xl p-3 border border-peach-200">
-                      <div dangerouslySetInnerHTML={{ __html: selectedOwner.important_info }} />
+                      <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedOwner.important_info) }} />
                     </div>
                   </div>
                 )}

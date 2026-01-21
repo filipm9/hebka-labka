@@ -1,21 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-
-function toTags(value) {
-  if (Array.isArray(value)) return value;
-  if (!value) return [];
-  const str = String(value).trim();
-  if (str.startsWith('{') && str.endsWith('}')) {
-    return str
-      .slice(1, -1)
-      .split(',')
-      .map((v) => v.trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1'))
-      .filter(Boolean);
-  }
-  return str
-    .split(',')
-    .map((v) => v.trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1'))
-    .filter(Boolean);
-}
+import { toTags } from '../utils/helpers.js';
 
 function toAgeYears(dateStr) {
   if (!dateStr) return '';

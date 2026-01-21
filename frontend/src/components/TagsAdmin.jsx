@@ -1,23 +1,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '../api/client.js';
 import { ConfirmDialog } from './ConfirmDialog.jsx';
-
-function toTags(value) {
-  if (Array.isArray(value)) return value;
-  if (!value) return [];
-  const str = String(value).trim();
-  if (str.startsWith('{') && str.endsWith('}')) {
-    return str
-      .slice(1, -1)
-      .split(',')
-      .map((v) => v.trim().replace(/^"(.*)"$/, '$1'))
-      .filter(Boolean);
-  }
-  return str
-    .split(',')
-    .map((v) => v.trim().replace(/^"(.*)"$/, '$1'))
-    .filter(Boolean);
-}
+import { toTags, sanitizeHtml } from '../utils/helpers.js';
 
 export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
   const [customTags, setCustomTags] = useState([]);
@@ -1445,7 +1429,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       </div>
                       <div 
                         className="text-sm text-sand-700 bg-white/70 rounded-xl p-3 border border-peach-100"
-                        dangerouslySetInnerHTML={{ __html: item.notes }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.notes) }}
                       />
                     </div>
                   ))}

@@ -1,20 +1,4 @@
-function toTags(value) {
-  if (Array.isArray(value)) return value;
-  if (!value) return [];
-  // Handle PostgreSQL array format: {tag1,tag2} or comma-separated string
-  const str = String(value).trim();
-  if (str.startsWith('{') && str.endsWith('}')) {
-    return str
-      .slice(1, -1)
-      .split(',')
-      .map((v) => v.trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1'))
-      .filter(Boolean);
-  }
-  return str
-    .split(',')
-    .map((v) => v.trim().replace(/^"(.*)"$/, '$1').replace(/^'(.*)'$/, '$1'))
-    .filter(Boolean);
-}
+import { toTags } from '../utils/helpers.js';
 
 export function DogCard({ dog, onEdit, onDelete, onOpen, onTagClick, onCharacterTagClick }) {
   const tags = toTags(dog.grooming_tolerance);
