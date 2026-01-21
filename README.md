@@ -91,9 +91,46 @@ Set `VITE_API_BASE=http://localhost:4000` for the frontend.
 - **Frontend:** React, Vite, TailwindCSS, React Query
 - **Testing:** Vitest, Supertest, Testing Library
 
+## Production Deployment (Railway)
+
+### Prerequisites
+- Push code to GitHub
+- Create account at [railway.app](https://railway.app)
+
+### Deploy Steps
+
+1. **Create PostgreSQL Database**
+   - New Project → Add Service → Database → PostgreSQL
+   - Railway auto-provisions and provides `DATABASE_URL`
+
+2. **Deploy Backend**
+   - Add Service → GitHub Repo → Select this repo
+   - Set Root Directory: `backend`
+   - Add environment variables:
+     - `DATABASE_URL` → Reference from PostgreSQL service
+     - `JWT_SECRET` → Generate: `openssl rand -base64 32`
+     - `CORS_ORIGIN` → Your frontend URL (set after deploying frontend)
+     - `COOKIE_SECURE` → `true`
+     - `COOKIE_SAMESITE` → `none`
+
+3. **Deploy Frontend**
+   - Add Service → GitHub Repo → Select this repo
+   - Set Root Directory: `frontend`
+   - Set Dockerfile: `Dockerfile.prod`
+   - Add build argument:
+     - `VITE_API_BASE` → Your backend URL (e.g., `https://xxx.railway.app`)
+
+4. **Update Backend CORS**
+   - Set `CORS_ORIGIN` to your frontend URL
+
+### Post-Deploy Checklist
+- [ ] Change default admin password (`admin@example.com` / `changeme`)
+- [ ] Verify login works
+- [ ] Test data persistence
+
 ## Security Notes
 
-- Cookies are `HttpOnly`, `Secure`, `SameSite=Lax`
-- Use HTTPS in production
+- Cookies are `HttpOnly`, `Secure`, `SameSite` configurable
+- Use HTTPS in production (Railway provides this automatically)
 - Passwords hashed with bcrypt
 - XSS protection via HTML sanitization

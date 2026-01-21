@@ -9,6 +9,8 @@ export const config = {
   corsOrigin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   sessionName: process.env.SESSION_NAME || 'dg_session',
   cookieSecure: process.env.COOKIE_SECURE === 'true',
+  // For cross-origin deployments (frontend/backend on different domains), use 'none'
+  cookieSameSite: process.env.COOKIE_SAMESITE || 'lax',
 };
 
 if (!config.dbUrl) {
