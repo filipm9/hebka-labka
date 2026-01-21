@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+frontend/dist/
+
+# Environment files (NEVER commit production secrets)
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/env.example
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
+
+# Docker volumes (local)
+pgdata/
