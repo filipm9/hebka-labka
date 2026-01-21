@@ -3,6 +3,7 @@ import { api } from '../api/client.js';
 import { ConfirmDialog } from './ConfirmDialog.jsx';
 
 const INITIAL_TAGS = ['Smrdí', 'Pĺzne', 'Kúše'];
+const INITIAL_CHARACTER_TAGS = ['Priateľský', 'Bojazlivý', 'Agresívny'];
 const INITIAL_BREEDS = ['Zlatý retriever', 'Labrador', 'Nemecký ovčiak', 'Pudel', 'Bígl', 'Yorkshirský teriér'];
 
 function getCustomTags() {
@@ -16,6 +17,19 @@ function getCustomTags() {
 
 function saveCustomTags(tags) {
   localStorage.setItem('dog_groomer_custom_tags', JSON.stringify(tags));
+}
+
+function getCustomCharacterTags() {
+  const stored = localStorage.getItem('dog_groomer_character_tags');
+  if (stored) {
+    return JSON.parse(stored);
+  }
+  saveCustomCharacterTags(INITIAL_CHARACTER_TAGS);
+  return INITIAL_CHARACTER_TAGS;
+}
+
+function saveCustomCharacterTags(tags) {
+  localStorage.setItem('dog_groomer_character_tags', JSON.stringify(tags));
 }
 
 function getCustomBreeds() {
@@ -50,12 +64,16 @@ function toTags(value) {
 
 export function TagsAdmin({ onClose, onTagUpdate }) {
   const [customTags, setCustomTags] = useState(getCustomTags());
+  const [customCharacterTags, setCustomCharacterTags] = useState(getCustomCharacterTags());
   const [customBreeds, setCustomBreeds] = useState(getCustomBreeds());
   const [editingTag, setEditingTag] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const [editingCharacterTag, setEditingCharacterTag] = useState(null);
+  const [editCharacterValue, setEditCharacterValue] = useState('');
   const [editingBreed, setEditingBreed] = useState(null);
   const [editBreedValue, setEditBreedValue] = useState('');
   const [newTag, setNewTag] = useState('');
+  const [newCharacterTag, setNewCharacterTag] = useState('');
   const [newBreed, setNewBreed] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState(null);
@@ -63,6 +81,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
 
   useEffect(() => {
     setCustomTags(getCustomTags());
+    setCustomCharacterTags(getCustomCharacterTags());
     setCustomBreeds(getCustomBreeds());
   }, []);
 
@@ -107,6 +126,8 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
               behavior_notes: dog.behavior_notes,
               grooming_tolerance: updatedTags,
               health_notes: dog.health_notes,
+              character_tags: toTags(dog.character_tags),
+              character_notes: dog.character_notes,
             });
           }
           
@@ -165,6 +186,8 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
           behavior_notes: dog.behavior_notes,
           grooming_tolerance: updatedTags,
           health_notes: dog.health_notes,
+          character_tags: toTags(dog.character_tags),
+          character_notes: dog.character_notes,
         });
       }
       
@@ -223,6 +246,8 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
               behavior_notes: dog.behavior_notes,
               grooming_tolerance: toTags(dog.grooming_tolerance),
               health_notes: dog.health_notes,
+              character_tags: toTags(dog.character_tags),
+              character_notes: dog.character_notes,
             });
           }
           
@@ -275,6 +300,8 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
           behavior_notes: dog.behavior_notes,
           grooming_tolerance: toTags(dog.grooming_tolerance),
           health_notes: dog.health_notes,
+          character_tags: toTags(dog.character_tags),
+          character_notes: dog.character_notes,
         });
       }
       
@@ -296,6 +323,130 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
   const handleCancelEditBreed = () => {
     setEditingBreed(null);
     setEditBreedValue('');
+  };
+
+  // --- Character Tags handlers ---
+  const handleAddCharacterTag = () => {
+    const val = newCharacterTag.trim();
+    if (!val) return;
+    if (customCharacterTags.includes(val)) {
+      setAlertMessage('Tento povahový tag už existuje.');
+      return;
+    }
+    const updated = [...customCharacterTags, val];
+    saveCustomCharacterTags(updated);
+    setCustomCharacterTags(updated);
+    setNewCharacterTag('');
+    window.dispatchEvent(new Event('characterTagsUpdated'));
+  };
+
+  const handleDeleteCharacterTag = async (tag) => {
+    setConfirmDialog({
+      message: `Naozaj chcete vymazať povahový tag "${tag}"? Tento tag bude odstránený zo všetkých psov, ktoré ho majú.`,
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        setIsUpdating(true);
+        try {
+          const allDogs = await api.dogs('');
+          const dogsToUpdate = allDogs.filter((dog) => {
+            const tags = toTags(dog.character_tags);
+            return tags.includes(tag);
+          });
+
+          for (const dog of dogsToUpdate) {
+            const charTags = toTags(dog.character_tags);
+            const updatedCharTags = charTags.filter((t) => t !== tag);
+            await api.updateDog(dog.id, {
+              owner_id: dog.owner_id,
+              name: dog.name,
+              breed: dog.breed,
+              weight: dog.weight,
+              birthdate: dog.birthdate,
+              behavior_notes: dog.behavior_notes,
+              grooming_tolerance: toTags(dog.grooming_tolerance),
+              health_notes: dog.health_notes,
+              character_tags: updatedCharTags,
+              character_notes: dog.character_notes,
+            });
+          }
+          
+          const updated = customCharacterTags.filter((t) => t !== tag);
+          saveCustomCharacterTags(updated);
+          setCustomCharacterTags(updated);
+          window.dispatchEvent(new Event('characterTagsUpdated'));
+          if (onTagUpdate) onTagUpdate();
+        } catch (error) {
+          console.error('Error deleting character tag:', error);
+          setAlertMessage('Chyba pri aktualizácii tagov: ' + (error.message || 'Neznáma chyba'));
+        } finally {
+          setIsUpdating(false);
+        }
+      },
+      onCancel: () => setConfirmDialog(null),
+    });
+  };
+
+  const handleStartEditCharacterTag = (tag) => {
+    setEditingCharacterTag(tag);
+    setEditCharacterValue(tag);
+  };
+
+  const handleSaveEditCharacterTag = async () => {
+    const val = editCharacterValue.trim();
+    if (!val) return;
+    if (val === editingCharacterTag) {
+      setEditingCharacterTag(null);
+      setEditCharacterValue('');
+      return;
+    }
+    if (customCharacterTags.includes(val)) {
+      setAlertMessage('Tento povahový tag už existuje.');
+      return;
+    }
+    
+    setIsUpdating(true);
+    try {
+      const allDogs = await api.dogs('');
+      const dogsToUpdate = allDogs.filter((dog) => {
+        const tags = toTags(dog.character_tags);
+        return tags.includes(editingCharacterTag);
+      });
+
+      for (const dog of dogsToUpdate) {
+        const charTags = toTags(dog.character_tags);
+        const updatedCharTags = charTags.map((t) => (t === editingCharacterTag ? val : t));
+        await api.updateDog(dog.id, {
+          owner_id: dog.owner_id,
+          name: dog.name,
+          breed: dog.breed,
+          weight: dog.weight,
+          birthdate: dog.birthdate,
+          behavior_notes: dog.behavior_notes,
+          grooming_tolerance: toTags(dog.grooming_tolerance),
+          health_notes: dog.health_notes,
+          character_tags: updatedCharTags,
+          character_notes: dog.character_notes,
+        });
+      }
+      
+      const updated = customCharacterTags.map((t) => (t === editingCharacterTag ? val : t));
+      saveCustomCharacterTags(updated);
+      setCustomCharacterTags(updated);
+      setEditingCharacterTag(null);
+      setEditCharacterValue('');
+      window.dispatchEvent(new Event('characterTagsUpdated'));
+      if (onTagUpdate) onTagUpdate();
+    } catch (error) {
+      console.error('Error updating character tags:', error);
+      setAlertMessage('Chyba pri aktualizácii tagov: ' + (error.message || 'Neznáma chyba'));
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCancelEditCharacterTag = () => {
+    setEditingCharacterTag(null);
+    setEditCharacterValue('');
   };
 
   return (
@@ -437,6 +588,123 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
               type="button"
               onClick={handleAddTag}
               className="px-6 rounded-2xl bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
+              disabled={isUpdating}
+            >
+              Pridať
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Character Tags Section */}
+      <div className="space-y-5 pt-6 border-t border-beige-200">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+              <line x1="9" y1="9" x2="9.01" y2="9"/>
+              <line x1="15" y1="9" x2="15.01" y2="9"/>
+            </svg>
+            <label className="text-sm font-medium text-violet-700">
+              Povahové tagy
+            </label>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {customCharacterTags.length === 0 ? (
+              <p className="text-sm text-beige-400">Zatiaľ žiadne povahové tagy.</p>
+            ) : (
+              customCharacterTags.map((tag) => (
+                <div
+                  key={tag}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium border border-violet-200"
+                >
+                  {editingCharacterTag === tag ? (
+                    <>
+                      <input
+                        type="text"
+                        value={editCharacterValue}
+                        onChange={(e) => setEditCharacterValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSaveEditCharacterTag();
+                          } else if (e.key === 'Escape') {
+                            handleCancelEditCharacterTag();
+                          }
+                        }}
+                        className="px-3 py-1 rounded-xl border border-violet-300 bg-white text-sm w-28 text-beige-800 focus:outline-none focus:border-violet-400"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSaveEditCharacterTag}
+                        className="text-violet-600 hover:text-violet-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-violet-50 transition-colors"
+                        title="Uložiť"
+                        disabled={isUpdating}
+                      >
+                        ✓
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelEditCharacterTag}
+                        className="text-beige-500 hover:text-beige-700 disabled:opacity-50 p-1 rounded-full hover:bg-beige-50 transition-colors"
+                        title="Zrušiť"
+                        disabled={isUpdating}
+                      >
+                        ×
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span>{tag}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleStartEditCharacterTag(tag)}
+                        className="text-blush-500 hover:text-blush-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
+                        title="Upraviť"
+                        disabled={isUpdating}
+                      >
+                        ✎
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCharacterTag(tag)}
+                        className="text-blush-400 hover:text-blush-500 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
+                        title="Vymazať"
+                        disabled={isUpdating}
+                      >
+                        ×
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-violet-700">
+            Pridať nový povahový tag
+          </label>
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={newCharacterTag}
+              onChange={(e) => setNewCharacterTag(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddCharacterTag();
+                }
+              }}
+              placeholder="Názov tagu (napr. Hravý, Kľudný...)"
+              className="flex-1 rounded-2xl border border-violet-200 bg-white/80 px-4 py-3 text-beige-800 placeholder-violet-300 focus:bg-white focus:border-violet-400 transition-all"
+            />
+            <button
+              type="button"
+              onClick={handleAddCharacterTag}
+              className="px-6 rounded-2xl bg-violet-500 text-white text-sm font-medium hover:bg-violet-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
               disabled={isUpdating}
             >
               Pridať

@@ -10,6 +10,7 @@ import { UsersAdmin } from './components/UsersAdmin.jsx';
 import { ConfirmDialog } from './components/ConfirmDialog.jsx';
 
 const INITIAL_TAGS = ['Smrdí', 'Pĺzne', 'Kúše'];
+const INITIAL_CHARACTER_TAGS = ['Priateľský', 'Bojazlivý', 'Agresívny'];
 
 function getAvailableTags() {
   const stored = localStorage.getItem('dog_groomer_custom_tags');
@@ -23,6 +24,20 @@ function getAvailableTags() {
   }
   localStorage.setItem('dog_groomer_custom_tags', JSON.stringify(INITIAL_TAGS));
   return INITIAL_TAGS;
+}
+
+function getAvailableCharacterTags() {
+  const stored = localStorage.getItem('dog_groomer_character_tags');
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed : INITIAL_CHARACTER_TAGS;
+    } catch {
+      return INITIAL_CHARACTER_TAGS;
+    }
+  }
+  localStorage.setItem('dog_groomer_character_tags', JSON.stringify(INITIAL_CHARACTER_TAGS));
+  return INITIAL_CHARACTER_TAGS;
 }
 
 function toTags(value) {
@@ -70,7 +85,9 @@ export default function App() {
   const [tab, setTab] = useState('dogs');
   const [dogSearch, setDogSearch] = useState('');
   const [dogTagFilter, setDogTagFilter] = useState([]);
+  const [dogCharacterTagFilter, setDogCharacterTagFilter] = useState([]);
   const [tagsRefreshKey, setTagsRefreshKey] = useState(0);
+  const [characterTagsRefreshKey, setCharacterTagsRefreshKey] = useState(0);
   const [ownerSearch, setOwnerSearch] = useState('');
   const [editingDog, setEditingDog] = useState(null);
   const [selectedDog, setSelectedDog] = useState(null);
@@ -84,16 +101,24 @@ export default function App() {
   const [changePasswordError, setChangePasswordError] = useState(null);
 
   const availableTags = useMemo(() => getAvailableTags(), [tagsRefreshKey]);
+  const availableCharacterTags = useMemo(() => getAvailableCharacterTags(), [characterTagsRefreshKey]);
 
   // Refresh available tags list when TagsAdmin updates localStorage
   // (and keep existing selected filters if still present)
   useEffect(() => {
     const handleTagsUpdated = () => setTagsRefreshKey((k) => k + 1);
+    const handleCharacterTagsUpdated = () => setCharacterTagsRefreshKey((k) => k + 1);
+    const handleStorageChange = () => {
+      setTagsRefreshKey((k) => k + 1);
+      setCharacterTagsRefreshKey((k) => k + 1);
+    };
     window.addEventListener('tagsUpdated', handleTagsUpdated);
-    window.addEventListener('storage', handleTagsUpdated);
+    window.addEventListener('characterTagsUpdated', handleCharacterTagsUpdated);
+    window.addEventListener('storage', handleStorageChange);
     return () => {
       window.removeEventListener('tagsUpdated', handleTagsUpdated);
-      window.removeEventListener('storage', handleTagsUpdated);
+      window.removeEventListener('characterTagsUpdated', handleCharacterTagsUpdated);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
@@ -108,8 +133,8 @@ export default function App() {
   }, [isAuthed, meQuery.isLoading, queryClient]);
 
   const dogsQuery = useQuery({
-    queryKey: ['dogs', dogSearch, dogTagFilter],
-    queryFn: () => api.dogs({ search: dogSearch, tags: dogTagFilter }),
+    queryKey: ['dogs', dogSearch, dogTagFilter, dogCharacterTagFilter],
+    queryFn: () => api.dogs({ search: dogSearch, tags: dogTagFilter, characterTags: dogCharacterTagFilter }),
     enabled: isAuthed && !meQuery.isLoading,
   });
 
@@ -328,6 +353,55 @@ export default function App() {
               )}
             </div>
           </div>
+          <div className="card py-4 border-l-4 border-l-violet-300">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                  <line x1="9" y1="9" x2="9.01" y2="9"/>
+                  <line x1="15" y1="9" x2="15.01" y2="9"/>
+                </svg>
+                <p className="text-sm font-medium text-violet-700">Filtrovať podľa povahových tagov</p>
+              </div>
+              <button
+                type="button"
+                className="text-xs text-violet-600 hover:text-violet-700 px-3 py-1.5 rounded-full hover:bg-violet-50 transition-colors disabled:opacity-60"
+                onClick={() => setDogCharacterTagFilter([])}
+                disabled={dogCharacterTagFilter.length === 0}
+              >
+                Vymazať filter
+              </button>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {availableCharacterTags.map((tag) => {
+                const selected = dogCharacterTagFilter.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => {
+                      setDogCharacterTagFilter((current) =>
+                        current.includes(tag)
+                          ? current.filter((t) => t !== tag)
+                          : [...current, tag],
+                      );
+                    }}
+                    className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                      selected
+                        ? 'bg-violet-200 text-violet-700 border-violet-300 shadow-sm'
+                        : 'border-violet-200 text-violet-600 hover:border-violet-300 hover:bg-violet-50'
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                );
+              })}
+              {availableCharacterTags.length === 0 && (
+                <p className="text-sm text-violet-400/80">Zatiaľ žiadne povahové tagy.</p>
+              )}
+            </div>
+          </div>
           {editingDog && (
             <DogForm
               owners={owners}
@@ -369,6 +443,11 @@ export default function App() {
                 onTagClick={(tag) => {
                   if (!dogTagFilter.includes(tag)) {
                     setDogTagFilter((current) => [...current, tag]);
+                  }
+                }}
+                onCharacterTagClick={(tag) => {
+                  if (!dogCharacterTagFilter.includes(tag)) {
+                    setDogCharacterTagFilter((current) => [...current, tag]);
                   }
                 }}
               />
@@ -426,6 +505,39 @@ export default function App() {
                       {selectedDog.health_notes && (
                         <div className="prose prose-sm max-w-none text-emerald-800 bg-white/60 rounded-xl p-3">
                           <div dangerouslySetInnerHTML={{ __html: selectedDog.health_notes }} />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {/* Povaha Section */}
+                  {(toTags(selectedDog.character_tags).length > 0 || selectedDog.character_notes) && (
+                    <div className="bg-gradient-to-br from-violet-50/80 to-purple-50/60 rounded-2xl p-4 border border-violet-100 space-y-4">
+                      <div className="flex items-center gap-2 text-violet-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="12" r="10"/>
+                          <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                          <line x1="9" y1="9" x2="9.01" y2="9"/>
+                          <line x1="15" y1="9" x2="15.01" y2="9"/>
+                        </svg>
+                        <p className="text-xs font-semibold uppercase tracking-wider">
+                          Povaha
+                        </p>
+                      </div>
+                      {toTags(selectedDog.character_tags).length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {toTags(selectedDog.character_tags).map((tag) => (
+                            <span
+                              key={tag}
+                              className="px-3 py-1.5 rounded-full bg-violet-100 text-violet-700 text-xs font-medium"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {selectedDog.character_notes && (
+                        <div className="prose prose-sm max-w-none text-violet-800 bg-white/60 rounded-xl p-3">
+                          <div dangerouslySetInnerHTML={{ __html: selectedDog.character_notes }} />
                         </div>
                       )}
                     </div>

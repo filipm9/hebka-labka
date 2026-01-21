@@ -23,7 +23,7 @@ export const api = {
   dogs: (searchOrOptions = '') => {
     const opts =
       typeof searchOrOptions === 'string'
-        ? { search: searchOrOptions, tags: [] }
+        ? { search: searchOrOptions, tags: [], characterTags: [] }
         : (searchOrOptions || {});
     const params = new URLSearchParams();
     params.set('search', opts.search || '');
@@ -31,6 +31,15 @@ export const api = {
       params.set(
         'tags',
         opts.tags
+          .map((t) => String(t).trim())
+          .filter(Boolean)
+          .join(','),
+      );
+    }
+    if (Array.isArray(opts.characterTags) && opts.characterTags.length > 0) {
+      params.set(
+        'characterTags',
+        opts.characterTags
           .map((t) => String(t).trim())
           .filter(Boolean)
           .join(','),

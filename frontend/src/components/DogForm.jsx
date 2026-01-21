@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 const INITIAL_TAGS = ['Smrdí', 'Pĺzne', 'Kúše'];
+const INITIAL_CHARACTER_TAGS = ['Priateľský', 'Bojazlivý', 'Agresívny'];
 const INITIAL_BREEDS = ['Zlatý retriever', 'Labrador', 'Nemecký ovčiak', 'Pudel', 'Bígl', 'Yorkshirský teriér'];
 
 function getAvailableTags() {
@@ -15,6 +16,20 @@ function getAvailableTags() {
 
 function saveCustomTags(tags) {
   localStorage.setItem('dog_groomer_custom_tags', JSON.stringify(tags));
+}
+
+function getAvailableCharacterTags() {
+  const stored = localStorage.getItem('dog_groomer_character_tags');
+  if (stored) {
+    return JSON.parse(stored);
+  }
+  // Initialize with default character tags if none exist
+  saveCharacterTags(INITIAL_CHARACTER_TAGS);
+  return INITIAL_CHARACTER_TAGS;
+}
+
+function saveCharacterTags(tags) {
+  localStorage.setItem('dog_groomer_character_tags', JSON.stringify(tags));
 }
 
 function getAvailableBreeds() {
@@ -66,8 +81,10 @@ function ageToDate(age) {
 export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }) {
   const [tagRefreshKey, setTagRefreshKey] = useState(0);
   const [breedRefreshKey, setBreedRefreshKey] = useState(0);
+  const [characterTagRefreshKey, setCharacterTagRefreshKey] = useState(0);
   const availableTags = getAvailableTags();
   const availableBreeds = getAvailableBreeds();
+  const availableCharacterTags = getAvailableCharacterTags();
   
   // Force re-render when tags are updated (tagRefreshKey changes)
   // This ensures availableTags is recalculated
@@ -80,6 +97,8 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
     grooming_tolerance: [],
     behavior_notes: '',
     health_notes: '',
+    character_tags: [],
+    character_notes: '',
   });
   const [newOwner, setNewOwner] = useState({
     name: '',
@@ -93,21 +112,26 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
   const breedDropdownRef = useRef(null);
   const notesRef = useRef(null);
   const healthNotesRef = useRef(null);
+  const characterNotesRef = useRef(null);
 
   useEffect(() => {
     const handleStorageChange = () => {
       setTagRefreshKey((k) => k + 1);
       setBreedRefreshKey((k) => k + 1);
+      setCharacterTagRefreshKey((k) => k + 1);
     };
     const handleTagsUpdated = () => setTagRefreshKey((k) => k + 1);
     const handleBreedsUpdated = () => setBreedRefreshKey((k) => k + 1);
+    const handleCharacterTagsUpdated = () => setCharacterTagRefreshKey((k) => k + 1);
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('tagsUpdated', handleTagsUpdated);
     window.addEventListener('breedsUpdated', handleBreedsUpdated);
+    window.addEventListener('characterTagsUpdated', handleCharacterTagsUpdated);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('tagsUpdated', handleTagsUpdated);
       window.removeEventListener('breedsUpdated', handleBreedsUpdated);
+      window.removeEventListener('characterTagsUpdated', handleCharacterTagsUpdated);
     };
   }, []);
 
@@ -141,6 +165,10 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
           : [],
         behavior_notes: initial.behavior_notes || '',
         health_notes: initial.health_notes || '',
+        character_tags: toTags(initial.character_tags).length
+          ? toTags(initial.character_tags)
+          : [],
+        character_notes: initial.character_notes || '',
       });
       setTimeout(() => {
         if (notesRef.current && initial.behavior_notes) {
@@ -149,12 +177,16 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
         if (healthNotesRef.current && initial.health_notes) {
           healthNotesRef.current.innerHTML = initial.health_notes;
         }
+        if (characterNotesRef.current && initial.character_notes) {
+          characterNotesRef.current.innerHTML = initial.character_notes;
+        }
       }, 0);
     } else {
-      setForm((f) => ({ ...f, grooming_tolerance: [], health_notes: '' }));
+      setForm((f) => ({ ...f, grooming_tolerance: [], health_notes: '', character_tags: [], character_notes: '' }));
       setTimeout(() => {
         if (notesRef.current) notesRef.current.innerHTML = '';
         if (healthNotesRef.current) healthNotesRef.current.innerHTML = '';
+        if (characterNotesRef.current) characterNotesRef.current.innerHTML = '';
       }, 0);
     }
   }, [initial]);
@@ -200,6 +232,24 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
     setForm((f) => ({ ...f, health_notes: html }));
   };
 
+  const handleCharacterTagToggle = (tag) => {
+    setForm((f) => {
+      const current = toTags(f.character_tags);
+      const exists = current.includes(tag);
+      return {
+        ...f,
+        character_tags: exists
+          ? current.filter((t) => t !== tag)
+          : [...current, tag],
+      };
+    });
+  };
+
+  const handleCharacterNotesInput = () => {
+    const html = characterNotesRef.current ? characterNotesRef.current.innerHTML : '';
+    setForm((f) => ({ ...f, character_notes: html }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const birthdate = ageToDate(form.age);
@@ -210,6 +260,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
       birthdate: birthdate || null,
       behavior_notes: notesRef.current?.innerHTML || '',
       health_notes: healthNotesRef.current?.innerHTML || '',
+      character_notes: characterNotesRef.current?.innerHTML || '',
     };
     const ownerPayload = form.owner_id === 'new' ? newOwner : null;
     onSubmit({ dog: payload, newOwner: ownerPayload });
@@ -805,6 +856,191 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
               className="w-full px-4 py-3 min-h-[100px] bg-white focus:outline-none prose prose-sm max-w-none text-emerald-800"
               onInput={handleHealthNotesInput}
               placeholder="Alergie, lieky, zdravotné problémy..."
+              style={{
+                whiteSpace: 'pre-wrap',
+                lineHeight: '1.6',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Povaha Section - Visually Separated */}
+      <div className="relative mt-8">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full border-t-2 border-dashed border-violet-200"></div>
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-white px-4 py-1 text-sm font-semibold text-violet-600 uppercase tracking-wider flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+              <line x1="9" y1="9" x2="9.01" y2="9"/>
+              <line x1="15" y1="9" x2="15.01" y2="9"/>
+            </svg>
+            Povaha
+          </span>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-br from-violet-50/80 to-purple-50/60 rounded-3xl p-6 border border-violet-100 space-y-5">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-violet-700">Povahové tagy</label>
+            {onOpenTagsAdmin && (
+              <button
+                type="button"
+                onClick={onOpenTagsAdmin}
+                className="text-violet-500 hover:text-violet-600 transition-colors px-3 py-1.5 rounded-full hover:bg-violet-100 text-xs font-medium flex items-center gap-1.5"
+                title="Spravovať tagy"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                Spravovať
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {availableCharacterTags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => handleCharacterTagToggle(tag)}
+                className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                  toTags(form.character_tags).includes(tag)
+                    ? 'bg-violet-200 text-violet-800 border-violet-300 shadow-sm'
+                    : 'border-violet-200 text-violet-600 hover:border-violet-300 hover:bg-violet-100/80 bg-white/60'
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+            {toTags(form.character_tags)
+              .filter((t) => !availableCharacterTags.includes(t))
+              .map((tag) => (
+                <span
+                  key={tag}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    className="text-violet-500 hover:text-violet-700 rounded-full hover:bg-violet-200 p-0.5"
+                    onClick={() => handleCharacterTagToggle(tag)}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            {availableCharacterTags.length === 0 && toTags(form.character_tags).length === 0 && (
+              <p className="text-sm text-violet-400 italic">Žiadne povahové tagy k dispozícii</p>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-violet-700">Povahové poznámky</label>
+          <div className="border border-violet-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+            <div className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-100">
+              <button
+                type="button"
+                className="p-2 hover:bg-white rounded-xl text-violet-600 hover:text-violet-700 transition-colors"
+                title="Tučné"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (characterNotesRef.current) {
+                    characterNotesRef.current.focus();
+                    document.execCommand('bold', false);
+                  }
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="p-2 hover:bg-white rounded-xl text-violet-600 hover:text-violet-700 transition-colors"
+                title="Kurzíva"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (characterNotesRef.current) {
+                    characterNotesRef.current.focus();
+                    document.execCommand('italic', false);
+                  }
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 4h4M6 20h8M8 4v16M14 4v16" />
+                </svg>
+              </button>
+              <div className="w-px h-5 bg-violet-200 mx-1" />
+              <button
+                type="button"
+                className="p-2 hover:bg-white rounded-xl text-violet-600 hover:text-violet-700 transition-colors"
+                title="Zoznam s odrážkami"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (characterNotesRef.current) {
+                    characterNotesRef.current.focus();
+                    document.execCommand('insertUnorderedList', false);
+                  }
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <circle cx="6" cy="7" r="1.5" fill="currentColor" />
+                  <circle cx="6" cy="12" r="1.5" fill="currentColor" />
+                  <circle cx="6" cy="17" r="1.5" fill="currentColor" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 7h10M10 12h10M10 17h10" />
+                </svg>
+              </button>
+            </div>
+            <div
+              ref={characterNotesRef}
+              contentEditable
+              suppressContentEditableWarning
+              className="w-full px-4 py-3 min-h-[100px] bg-white focus:outline-none prose prose-sm max-w-none text-violet-800"
+              onInput={handleCharacterNotesInput}
+              placeholder="Správanie, temperament, zvláštnosti..."
               style={{
                 whiteSpace: 'pre-wrap',
                 lineHeight: '1.6',

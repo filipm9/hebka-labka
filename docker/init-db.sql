@@ -29,6 +29,8 @@ create table if not exists dogs (
   behavior_notes text,
   grooming_tolerance text[] default '{}',
   health_notes text,
+  character_tags text[] default '{}',
+  character_notes text,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
@@ -38,6 +40,17 @@ do $$
 begin
   if not exists (select 1 from information_schema.columns where table_name = 'dogs' and column_name = 'health_notes') then
     alter table dogs add column health_notes text;
+  end if;
+end $$;
+
+-- Migration: Add character_tags and character_notes columns if they don't exist
+do $$
+begin
+  if not exists (select 1 from information_schema.columns where table_name = 'dogs' and column_name = 'character_tags') then
+    alter table dogs add column character_tags text[] default '{}';
+  end if;
+  if not exists (select 1 from information_schema.columns where table_name = 'dogs' and column_name = 'character_notes') then
+    alter table dogs add column character_notes text;
   end if;
 end $$;
 

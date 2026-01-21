@@ -25,6 +25,8 @@ create table if not exists dogs (
   behavior_notes text,
   grooming_tolerance text[] default '{}',
   health_notes text,
+  character_tags text[] default '{}',
+  character_notes text,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
