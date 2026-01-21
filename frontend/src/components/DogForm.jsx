@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 const INITIAL_TAGS = ['Smrdí', 'Pĺzne', 'Kúše'];
 const INITIAL_CHARACTER_TAGS = ['Priateľský', 'Bojazlivý', 'Agresívny'];
 const INITIAL_BREEDS = ['Zlatý retriever', 'Labrador', 'Nemecký ovčiak', 'Pudel', 'Bígl', 'Yorkshirský teriér'];
+const INITIAL_COSMETICS = ['Šampón na citlivú pokožku', 'Kondicionér', 'Sprej na rozčesávanie', 'Parfum'];
 
 function getAvailableTags() {
   const stored = localStorage.getItem('dog_groomer_custom_tags');
@@ -42,6 +43,15 @@ function getAvailableBreeds() {
   return INITIAL_BREEDS;
 }
 
+function getAvailableCosmetics() {
+  const stored = localStorage.getItem('dog_groomer_custom_cosmetics');
+  if (stored) {
+    return JSON.parse(stored);
+  }
+  // Initialize with default cosmetics if none exist
+  localStorage.setItem('dog_groomer_custom_cosmetics', JSON.stringify(INITIAL_COSMETICS));
+  return INITIAL_COSMETICS;
+}
 
 function toTags(value) {
   if (Array.isArray(value)) return value;
@@ -82,9 +92,11 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
   const [tagRefreshKey, setTagRefreshKey] = useState(0);
   const [breedRefreshKey, setBreedRefreshKey] = useState(0);
   const [characterTagRefreshKey, setCharacterTagRefreshKey] = useState(0);
+  const [cosmeticsRefreshKey, setCosmeticsRefreshKey] = useState(0);
   const availableTags = getAvailableTags();
   const availableBreeds = getAvailableBreeds();
   const availableCharacterTags = getAvailableCharacterTags();
+  const availableCosmetics = getAvailableCosmetics();
   
   // Force re-render when tags are updated (tagRefreshKey changes)
   // This ensures availableTags is recalculated
@@ -99,6 +111,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
     health_notes: '',
     character_tags: [],
     character_notes: '',
+    cosmetics_used: [],
   });
   const [newOwner, setNewOwner] = useState({
     name: '',
@@ -119,19 +132,23 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
       setTagRefreshKey((k) => k + 1);
       setBreedRefreshKey((k) => k + 1);
       setCharacterTagRefreshKey((k) => k + 1);
+      setCosmeticsRefreshKey((k) => k + 1);
     };
     const handleTagsUpdated = () => setTagRefreshKey((k) => k + 1);
     const handleBreedsUpdated = () => setBreedRefreshKey((k) => k + 1);
     const handleCharacterTagsUpdated = () => setCharacterTagRefreshKey((k) => k + 1);
+    const handleCosmeticsUpdated = () => setCosmeticsRefreshKey((k) => k + 1);
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('tagsUpdated', handleTagsUpdated);
     window.addEventListener('breedsUpdated', handleBreedsUpdated);
     window.addEventListener('characterTagsUpdated', handleCharacterTagsUpdated);
+    window.addEventListener('cosmeticsUpdated', handleCosmeticsUpdated);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('tagsUpdated', handleTagsUpdated);
       window.removeEventListener('breedsUpdated', handleBreedsUpdated);
       window.removeEventListener('characterTagsUpdated', handleCharacterTagsUpdated);
+      window.removeEventListener('cosmeticsUpdated', handleCosmeticsUpdated);
     };
   }, []);
 
@@ -169,6 +186,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
           ? toTags(initial.character_tags)
           : [],
         character_notes: initial.character_notes || '',
+        cosmetics_used: Array.isArray(initial.cosmetics_used) ? initial.cosmetics_used : [],
       });
       setTimeout(() => {
         if (notesRef.current && initial.behavior_notes) {
@@ -182,7 +200,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
         }
       }, 0);
     } else {
-      setForm((f) => ({ ...f, grooming_tolerance: [], health_notes: '', character_tags: [], character_notes: '' }));
+      setForm((f) => ({ ...f, grooming_tolerance: [], health_notes: '', character_tags: [], character_notes: '', cosmetics_used: [] }));
       setTimeout(() => {
         if (notesRef.current) notesRef.current.innerHTML = '';
         if (healthNotesRef.current) healthNotesRef.current.innerHTML = '';
@@ -250,6 +268,35 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
     setForm((f) => ({ ...f, character_notes: html }));
   };
 
+  const handleCosmeticToggle = (product) => {
+    setForm((f) => {
+      const current = f.cosmetics_used || [];
+      const exists = current.find((c) => c.product === product);
+      if (exists) {
+        return {
+          ...f,
+          cosmetics_used: current.filter((c) => c.product !== product),
+        };
+      }
+      return {
+        ...f,
+        cosmetics_used: [...current, { product, notes: '' }],
+      };
+    });
+  };
+
+  const handleCosmeticNotesChange = (product, notes) => {
+    setForm((f) => {
+      const current = f.cosmetics_used || [];
+      return {
+        ...f,
+        cosmetics_used: current.map((c) =>
+          c.product === product ? { ...c, notes } : c
+        ),
+      };
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const birthdate = ageToDate(form.age);
@@ -261,6 +308,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
       behavior_notes: notesRef.current?.innerHTML || '',
       health_notes: healthNotesRef.current?.innerHTML || '',
       character_notes: characterNotesRef.current?.innerHTML || '',
+      cosmetics_used: form.cosmetics_used || [],
     };
     const ownerPayload = form.owner_id === 'new' ? newOwner : null;
     onSubmit({ dog: payload, newOwner: ownerPayload });
@@ -1048,6 +1096,119 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
             />
           </div>
         </div>
+      </div>
+
+      {/* Kozmetika Section - Visually Separated */}
+      <div className="relative mt-8">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full border-t-2 border-dashed border-rose-200"></div>
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-white px-4 py-1 text-sm font-semibold text-rose-600 uppercase tracking-wider flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.54Z"/>
+              <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.54Z"/>
+            </svg>
+            Kozmetika
+          </span>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-br from-rose-50/80 to-pink-50/60 rounded-3xl p-6 border border-rose-100 space-y-5">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-rose-700">Použité kozmetické produkty</label>
+            {onOpenTagsAdmin && (
+              <button
+                type="button"
+                onClick={onOpenTagsAdmin}
+                className="text-rose-500 hover:text-rose-600 transition-colors px-3 py-1.5 rounded-full hover:bg-rose-100 text-xs font-medium flex items-center gap-1.5"
+                title="Spravovať produkty"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                Spravovať
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {availableCosmetics.map((product) => {
+              const isSelected = (form.cosmetics_used || []).some((c) => c.product === product);
+              return (
+                <button
+                  key={product}
+                  type="button"
+                  onClick={() => handleCosmeticToggle(product)}
+                  className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                    isSelected
+                      ? 'bg-rose-200 text-rose-800 border-rose-300 shadow-sm'
+                      : 'border-rose-200 text-rose-600 hover:border-rose-300 hover:bg-rose-100/80 bg-white/60'
+                  }`}
+                >
+                  {product}
+                </button>
+              );
+            })}
+            {(form.cosmetics_used || [])
+              .filter((c) => !availableCosmetics.includes(c.product))
+              .map((cosmetic) => (
+                <span
+                  key={cosmetic.product}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-100 text-rose-700 text-sm font-medium"
+                >
+                  {cosmetic.product}
+                  <button
+                    type="button"
+                    className="text-rose-500 hover:text-rose-700 rounded-full hover:bg-rose-200 p-0.5"
+                    onClick={() => handleCosmeticToggle(cosmetic.product)}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            {availableCosmetics.length === 0 && (form.cosmetics_used || []).length === 0 && (
+              <p className="text-sm text-rose-400 italic">Žiadne kozmetické produkty k dispozícii</p>
+            )}
+          </div>
+        </div>
+
+        {/* Notes for each selected cosmetic */}
+        {(form.cosmetics_used || []).length > 0 && (
+          <div className="space-y-4">
+            <label className="text-sm font-medium text-rose-700">Poznámky k použitiu</label>
+            {(form.cosmetics_used || []).map((cosmetic) => (
+              <div key={cosmetic.product} className="bg-white/60 rounded-2xl p-4 border border-rose-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium text-rose-700">{cosmetic.product}</span>
+                </div>
+                <input
+                  type="text"
+                  value={cosmetic.notes || ''}
+                  onChange={(e) => handleCosmeticNotesChange(cosmetic.product, e.target.value)}
+                  placeholder="Ako bol produkt použitý, riedenie, množstvo..."
+                  className="w-full rounded-xl border border-rose-200 bg-white px-4 py-2.5 text-sm text-rose-800 placeholder-rose-300 focus:bg-white focus:border-rose-400 focus:outline-none transition-all"
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex gap-3 pt-2">

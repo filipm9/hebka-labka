@@ -81,15 +81,16 @@ dogsRouter.get('/:id', async (req, res) => {
 });
 
 dogsRouter.post('/', async (req, res) => {
-  const { owner_id, name, breed, weight, birthdate, behavior_notes, grooming_tolerance, health_notes, character_tags, character_notes } = req.body || {};
+  const { owner_id, name, breed, weight, birthdate, behavior_notes, grooming_tolerance, health_notes, character_tags, character_notes, cosmetics_used } = req.body || {};
   if (!owner_id || !name) return res.status(400).json({ error: 'owner_id and name required' });
   const tolerance = Array.isArray(grooming_tolerance) ? grooming_tolerance : [];
   const charTags = Array.isArray(character_tags) ? character_tags : [];
+  const cosmetics = Array.isArray(cosmetics_used) ? cosmetics_used : [];
   
   const { rows } = await query(
     `
-    insert into dogs (owner_id, name, breed, weight, birthdate, behavior_notes, grooming_tolerance, health_notes, character_tags, character_notes)
-    values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    insert into dogs (owner_id, name, breed, weight, birthdate, behavior_notes, grooming_tolerance, health_notes, character_tags, character_notes, cosmetics_used)
+    values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
     returning *
     `,
     [
@@ -103,15 +104,17 @@ dogsRouter.post('/', async (req, res) => {
       health_notes || null,
       charTags,
       character_notes || null,
+      JSON.stringify(cosmetics),
     ],
   );
   res.status(201).json(rows[0]);
 });
 
 dogsRouter.put('/:id', async (req, res) => {
-  const { owner_id, name, breed, weight, birthdate, behavior_notes, grooming_tolerance, health_notes, character_tags, character_notes } = req.body || {};
+  const { owner_id, name, breed, weight, birthdate, behavior_notes, grooming_tolerance, health_notes, character_tags, character_notes, cosmetics_used } = req.body || {};
   const tolerance = Array.isArray(grooming_tolerance) ? grooming_tolerance : [];
   const charTags = Array.isArray(character_tags) ? character_tags : [];
+  const cosmetics = Array.isArray(cosmetics_used) ? cosmetics_used : [];
   
   const { rows } = await query(
     `
@@ -126,8 +129,9 @@ dogsRouter.put('/:id', async (req, res) => {
         health_notes = $8,
         character_tags = $9,
         character_notes = $10,
+        cosmetics_used = $11,
         updated_at = now()
-    where id = $11
+    where id = $12
     returning *
     `,
     [
@@ -141,6 +145,7 @@ dogsRouter.put('/:id', async (req, res) => {
       health_notes || null,
       charTags,
       character_notes || null,
+      JSON.stringify(cosmetics),
       req.params.id,
     ],
   );

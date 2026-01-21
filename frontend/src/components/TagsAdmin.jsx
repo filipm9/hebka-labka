@@ -5,6 +5,7 @@ import { ConfirmDialog } from './ConfirmDialog.jsx';
 const INITIAL_TAGS = ['Smrdí', 'Pĺzne', 'Kúše'];
 const INITIAL_CHARACTER_TAGS = ['Priateľský', 'Bojazlivý', 'Agresívny'];
 const INITIAL_BREEDS = ['Zlatý retriever', 'Labrador', 'Nemecký ovčiak', 'Pudel', 'Bígl', 'Yorkshirský teriér'];
+const INITIAL_COSMETICS = ['Šampón na citlivú pokožku', 'Kondicionér', 'Sprej na rozčesávanie', 'Parfum'];
 
 function getCustomTags() {
   const stored = localStorage.getItem('dog_groomer_custom_tags');
@@ -45,6 +46,19 @@ function saveCustomBreeds(breeds) {
   localStorage.setItem('dog_groomer_custom_breeds', JSON.stringify(breeds));
 }
 
+function getCustomCosmetics() {
+  const stored = localStorage.getItem('dog_groomer_custom_cosmetics');
+  if (stored) {
+    return JSON.parse(stored);
+  }
+  saveCustomCosmetics(INITIAL_COSMETICS);
+  return INITIAL_COSMETICS;
+}
+
+function saveCustomCosmetics(cosmetics) {
+  localStorage.setItem('dog_groomer_custom_cosmetics', JSON.stringify(cosmetics));
+}
+
 function toTags(value) {
   if (Array.isArray(value)) return value;
   if (!value) return [];
@@ -66,15 +80,19 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
   const [customTags, setCustomTags] = useState(getCustomTags());
   const [customCharacterTags, setCustomCharacterTags] = useState(getCustomCharacterTags());
   const [customBreeds, setCustomBreeds] = useState(getCustomBreeds());
+  const [customCosmetics, setCustomCosmetics] = useState(getCustomCosmetics());
   const [editingTag, setEditingTag] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [editingCharacterTag, setEditingCharacterTag] = useState(null);
   const [editCharacterValue, setEditCharacterValue] = useState('');
   const [editingBreed, setEditingBreed] = useState(null);
   const [editBreedValue, setEditBreedValue] = useState('');
+  const [editingCosmetic, setEditingCosmetic] = useState(null);
+  const [editCosmeticValue, setEditCosmeticValue] = useState('');
   const [newTag, setNewTag] = useState('');
   const [newCharacterTag, setNewCharacterTag] = useState('');
   const [newBreed, setNewBreed] = useState('');
+  const [newCosmetic, setNewCosmetic] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [alertMessage, setAlertMessage] = useState(null);
@@ -83,6 +101,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
     setCustomTags(getCustomTags());
     setCustomCharacterTags(getCustomCharacterTags());
     setCustomBreeds(getCustomBreeds());
+    setCustomCosmetics(getCustomCosmetics());
   }, []);
 
   // --- Tags handlers ---
@@ -447,6 +466,134 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
   const handleCancelEditCharacterTag = () => {
     setEditingCharacterTag(null);
     setEditCharacterValue('');
+  };
+
+  // --- Cosmetics handlers ---
+  const handleAddCosmetic = () => {
+    const val = newCosmetic.trim();
+    if (!val) return;
+    if (customCosmetics.includes(val)) {
+      setAlertMessage('Táto kozmetika už existuje.');
+      return;
+    }
+    const updated = [...customCosmetics, val];
+    saveCustomCosmetics(updated);
+    setCustomCosmetics(updated);
+    setNewCosmetic('');
+    window.dispatchEvent(new Event('cosmeticsUpdated'));
+  };
+
+  const handleDeleteCosmetic = async (cosmetic) => {
+    setConfirmDialog({
+      message: `Naozaj chcete vymazať kozmetiku "${cosmetic}"? Táto kozmetika bude odstránená zo všetkých psov.`,
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        setIsUpdating(true);
+        try {
+          const allDogs = await api.dogs('');
+          const dogsToUpdate = allDogs.filter((dog) => {
+            const cosmetics = dog.cosmetics_used || [];
+            return cosmetics.some((c) => c.product === cosmetic);
+          });
+
+          for (const dog of dogsToUpdate) {
+            const cosmetics = dog.cosmetics_used || [];
+            const updatedCosmetics = cosmetics.filter((c) => c.product !== cosmetic);
+            await api.updateDog(dog.id, {
+              owner_id: dog.owner_id,
+              name: dog.name,
+              breed: dog.breed,
+              weight: dog.weight,
+              birthdate: dog.birthdate,
+              behavior_notes: dog.behavior_notes,
+              grooming_tolerance: toTags(dog.grooming_tolerance),
+              health_notes: dog.health_notes,
+              character_tags: toTags(dog.character_tags),
+              character_notes: dog.character_notes,
+              cosmetics_used: updatedCosmetics,
+            });
+          }
+          
+          const updated = customCosmetics.filter((c) => c !== cosmetic);
+          saveCustomCosmetics(updated);
+          setCustomCosmetics(updated);
+          window.dispatchEvent(new Event('cosmeticsUpdated'));
+          if (onTagUpdate) onTagUpdate();
+        } catch (error) {
+          console.error('Error deleting cosmetic:', error);
+          setAlertMessage('Chyba pri aktualizácii kozmetiky: ' + (error.message || 'Neznáma chyba'));
+        } finally {
+          setIsUpdating(false);
+        }
+      },
+      onCancel: () => setConfirmDialog(null),
+    });
+  };
+
+  const handleStartEditCosmetic = (cosmetic) => {
+    setEditingCosmetic(cosmetic);
+    setEditCosmeticValue(cosmetic);
+  };
+
+  const handleSaveEditCosmetic = async () => {
+    const val = editCosmeticValue.trim();
+    if (!val) return;
+    if (val === editingCosmetic) {
+      setEditingCosmetic(null);
+      setEditCosmeticValue('');
+      return;
+    }
+    if (customCosmetics.includes(val)) {
+      setAlertMessage('Táto kozmetika už existuje.');
+      return;
+    }
+    
+    setIsUpdating(true);
+    try {
+      const allDogs = await api.dogs('');
+      const dogsToUpdate = allDogs.filter((dog) => {
+        const cosmetics = dog.cosmetics_used || [];
+        return cosmetics.some((c) => c.product === editingCosmetic);
+      });
+
+      for (const dog of dogsToUpdate) {
+        const cosmetics = dog.cosmetics_used || [];
+        const updatedCosmetics = cosmetics.map((c) => 
+          c.product === editingCosmetic ? { ...c, product: val } : c
+        );
+        await api.updateDog(dog.id, {
+          owner_id: dog.owner_id,
+          name: dog.name,
+          breed: dog.breed,
+          weight: dog.weight,
+          birthdate: dog.birthdate,
+          behavior_notes: dog.behavior_notes,
+          grooming_tolerance: toTags(dog.grooming_tolerance),
+          health_notes: dog.health_notes,
+          character_tags: toTags(dog.character_tags),
+          character_notes: dog.character_notes,
+          cosmetics_used: updatedCosmetics,
+        });
+      }
+      
+      const updated = customCosmetics.map((c) => (c === editingCosmetic ? val : c));
+      saveCustomCosmetics(updated);
+      setCustomCosmetics(updated);
+      setEditingCosmetic(null);
+      setEditCosmeticValue('');
+      window.dispatchEvent(new Event('cosmeticsUpdated'));
+      if (onTagUpdate) onTagUpdate();
+    } catch (error) {
+      console.error('Error updating cosmetic:', error);
+      setAlertMessage('Chyba pri aktualizácii kozmetiky: ' + (error.message || 'Neznáma chyba'));
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCancelEditCosmetic = () => {
+    setEditingCosmetic(null);
+    setEditCosmeticValue('');
   };
 
   return (
@@ -814,6 +961,121 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
               type="button"
               onClick={handleAddBreed}
               className="px-6 rounded-2xl bg-blush-400 text-white text-sm font-medium hover:bg-blush-500 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
+              disabled={isUpdating}
+            >
+              Pridať
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Cosmetics Section */}
+      <div className="space-y-5 pt-6 border-t border-beige-200">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.54Z"/>
+              <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.54Z"/>
+            </svg>
+            <label className="text-sm font-medium text-rose-700">
+              Kozmetické produkty
+            </label>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {customCosmetics.length === 0 ? (
+              <p className="text-sm text-beige-400">Zatiaľ žiadne kozmetické produkty.</p>
+            ) : (
+              customCosmetics.map((cosmetic) => (
+                <div
+                  key={cosmetic}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-100 text-rose-700 text-sm font-medium border border-rose-200"
+                >
+                  {editingCosmetic === cosmetic ? (
+                    <>
+                      <input
+                        type="text"
+                        value={editCosmeticValue}
+                        onChange={(e) => setEditCosmeticValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSaveEditCosmetic();
+                          } else if (e.key === 'Escape') {
+                            handleCancelEditCosmetic();
+                          }
+                        }}
+                        className="px-3 py-1 rounded-xl border border-rose-300 bg-white text-sm w-40 text-beige-800 focus:outline-none focus:border-rose-400"
+                        autoFocus
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSaveEditCosmetic}
+                        className="text-rose-600 hover:text-rose-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-rose-50 transition-colors"
+                        title="Uložiť"
+                        disabled={isUpdating}
+                      >
+                        ✓
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleCancelEditCosmetic}
+                        className="text-beige-500 hover:text-beige-700 disabled:opacity-50 p-1 rounded-full hover:bg-beige-50 transition-colors"
+                        title="Zrušiť"
+                        disabled={isUpdating}
+                      >
+                        ×
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span>{cosmetic}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleStartEditCosmetic(cosmetic)}
+                        className="text-blush-500 hover:text-blush-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
+                        title="Upraviť"
+                        disabled={isUpdating}
+                      >
+                        ✎
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCosmetic(cosmetic)}
+                        className="text-blush-400 hover:text-blush-500 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
+                        title="Vymazať"
+                        disabled={isUpdating}
+                      >
+                        ×
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-rose-700">
+            Pridať nový kozmetický produkt
+          </label>
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={newCosmetic}
+              onChange={(e) => setNewCosmetic(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddCosmetic();
+                }
+              }}
+              placeholder="Názov produktu (napr. Šampón, Kondicionér...)"
+              className="flex-1 rounded-2xl border border-rose-200 bg-white/80 px-4 py-3 text-beige-800 placeholder-rose-300 focus:bg-white focus:border-rose-400 transition-all"
+            />
+            <button
+              type="button"
+              onClick={handleAddCosmetic}
+              className="px-6 rounded-2xl bg-rose-500 text-white text-sm font-medium hover:bg-rose-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
               disabled={isUpdating}
             >
               Pridať

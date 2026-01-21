@@ -31,6 +31,7 @@ create table if not exists dogs (
   health_notes text,
   character_tags text[] default '{}',
   character_notes text,
+  cosmetics_used jsonb default '[]'::jsonb,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
@@ -51,6 +52,14 @@ begin
   end if;
   if not exists (select 1 from information_schema.columns where table_name = 'dogs' and column_name = 'character_notes') then
     alter table dogs add column character_notes text;
+  end if;
+end $$;
+
+-- Migration: Add cosmetics_used column if it doesn't exist
+do $$
+begin
+  if not exists (select 1 from information_schema.columns where table_name = 'dogs' and column_name = 'cosmetics_used') then
+    alter table dogs add column cosmetics_used jsonb default '[]'::jsonb;
   end if;
 end $$;
 

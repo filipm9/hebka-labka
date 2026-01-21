@@ -574,6 +574,33 @@ export default function App() {
                       )}
                     </div>
                   )}
+                  {/* Kozmetika Section */}
+                  {(selectedDog.cosmetics_used && selectedDog.cosmetics_used.length > 0) && (
+                    <div className="bg-gradient-to-br from-rose-50/80 to-pink-50/60 rounded-2xl p-4 border border-rose-100 space-y-4">
+                      <div className="flex items-center gap-2 text-rose-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.54Z"/>
+                          <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.54Z"/>
+                        </svg>
+                        <p className="text-xs font-semibold uppercase tracking-wider">
+                          Kozmetika
+                        </p>
+                      </div>
+                      <div className="space-y-2">
+                        {selectedDog.cosmetics_used.map((cosmetic, index) => (
+                          <div
+                            key={index}
+                            className="bg-white/60 rounded-xl p-3 border border-rose-100"
+                          >
+                            <span className="text-sm font-medium text-rose-700">{cosmetic.product}</span>
+                            {cosmetic.notes && (
+                              <p className="text-sm text-rose-600 mt-1">{cosmetic.notes}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {selectedDog.behavior_notes && (
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-beige-500 uppercase tracking-wider">
