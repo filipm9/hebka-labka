@@ -6,13 +6,14 @@ COPY package.json package-lock.json* ./
 RUN npm install
 
 COPY . .
-ARG VITE_API_BASE
-ENV VITE_API_BASE=$VITE_API_BASE
+# API calls go through /api proxy (same-origin for Safari)
+ENV VITE_API_BASE=/api
 RUN npm run build
 
 # Serve with nginx
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 EXPOSE 80
+# nginx:alpine auto-runs envsubst on .template files in /etc/nginx/templates/
 CMD ["nginx", "-g", "daemon off;"]
