@@ -161,8 +161,10 @@ export default function App() {
 
   const createOwner = useMutation({
     mutationFn: api.createOwner,
-    onSuccess: () => {
+    onSuccess: (createdOwner) => {
       queryClient.invalidateQueries({ queryKey: ['owners'] });
+      // Keep editing the newly created owner (now with ID for updates)
+      setEditingOwner(createdOwner);
       showToast('Majiteľ bol úspešne pridaný');
     },
     onError: (error) => {
@@ -705,23 +707,27 @@ export default function App() {
 
       {tab === 'owners' && (
         <div className="space-y-6">
-          <input
-            className="w-full rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
-            placeholder="Hľadať majiteľov (meno)"
-            value={ownerSearch}
-            onChange={(e) => setOwnerSearch(e.target.value)}
-          />
-          {!editingOwner && (
-            <OwnerForm 
-              onSubmit={(body) => createOwner.mutate(body)}
-              onOpenTagsAdmin={() => setTab('tags')}
+          <div className="flex gap-3">
+            <input
+              className="flex-1 rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
+              placeholder="Hľadať majiteľov (meno)"
+              value={ownerSearch}
+              onChange={(e) => setOwnerSearch(e.target.value)}
             />
-          )}
+            <button
+              onClick={() => setEditingOwner({})}
+              className="bg-blush-400 text-white px-6 py-3 rounded-2xl font-medium hover:bg-blush-500 shadow-sm hover:shadow-md transition-all"
+            >
+              Pridať majiteľa
+            </button>
+          </div>
           {editingOwner && (
             <OwnerForm
               initial={editingOwner}
               onSubmit={(body) =>
-                updateOwner.mutate({ id: editingOwner.id, body })
+                editingOwner.id
+                  ? updateOwner.mutate({ id: editingOwner.id, body })
+                  : createOwner.mutate(body)
               }
               onCancel={() => setEditingOwner(null)}
               onOpenTagsAdmin={() => setTab('tags')}
