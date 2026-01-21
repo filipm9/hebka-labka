@@ -47,7 +47,27 @@ create index if not exists idx_owners_name on owners using gin (name gin_trgm_op
 create index if not exists idx_dog_owners_dog_id on dog_owners(dog_id);
 create index if not exists idx_dog_owners_owner_id on dog_owners(owner_id);
 
+-- App config table for storing configuration values (tags, breeds, cosmetics, etc.)
+create table if not exists app_config (
+  id serial primary key,
+  config_key text not null unique,
+  config_value jsonb not null default '[]'::jsonb,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
+create index if not exists idx_app_config_key on app_config(config_key);
+
 -- Seed default login (email: admin@example.com, password: changeme)
 insert into users (email, password_hash)
 values ('admin@example.com', crypt('changeme', gen_salt('bf')))
 on conflict (email) do nothing;
+
+-- Seed default config values
+insert into app_config (config_key, config_value) values
+  ('health_tags', '["Smrdí", "Pĺzne", "Kúše"]'::jsonb),
+  ('character_tags', '["Priateľský", "Bojazlivý", "Agresívny"]'::jsonb),
+  ('breeds', '["Zlatý retriever", "Labrador", "Nemecký ovčiak", "Pudel", "Bígl", "Yorkshirský teriér"]'::jsonb),
+  ('cosmetics', '["Šampón na citlivú pokožku", "Kondicionér", "Sprej na rozčesávanie", "Parfum"]'::jsonb),
+  ('communication_methods', '["WhatsApp", "Instagram", "Phone"]'::jsonb)
+on conflict (config_key) do nothing;

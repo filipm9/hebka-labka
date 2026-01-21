@@ -45,5 +45,16 @@ create index if not exists idx_owners_name on owners using gin (name gin_trgm_op
 create index if not exists idx_dog_owners_dog_id on dog_owners(dog_id);
 create index if not exists idx_dog_owners_owner_id on dog_owners(owner_id);
 
+-- App config table for storing configuration values (tags, breeds, cosmetics, etc.)
+create table if not exists app_config (
+  id serial primary key,
+  config_key text not null unique,
+  config_value jsonb not null default '[]'::jsonb,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
+create index if not exists idx_app_config_key on app_config(config_key);
+
 -- seed single user; replace hash with bcrypt hash of your password
 -- insert into users (email, password_hash) values ('you@example.com', '$2a$10$...');
