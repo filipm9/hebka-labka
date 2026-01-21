@@ -25,7 +25,7 @@ dogsRouter.get('/', async (req, res) => {
     `
     select d.*, o.name as owner_name
     from dogs d
-    join owners o on o.id = d.owner_id
+    left join owners o on o.id = d.owner_id
     where ($1 = '' or 
       d.name ilike $2 or 
       o.name ilike $2 or
@@ -69,7 +69,7 @@ dogsRouter.get('/:id', async (req, res) => {
     `
     select d.*, o.name as owner_name
     from dogs d
-    join owners o on o.id = d.owner_id
+    left join owners o on o.id = d.owner_id
     where d.id = $1
     `,
     [req.params.id],
@@ -81,7 +81,7 @@ dogsRouter.get('/:id', async (req, res) => {
 
 dogsRouter.post('/', async (req, res) => {
   const { owner_id, name, breed, weight, birthdate, behavior_notes, grooming_tolerance, health_notes, character_tags, character_notes, cosmetics_used, grooming_time_minutes } = req.body || {};
-  if (!owner_id || !name) return res.status(400).json({ error: 'owner_id and name required' });
+  if (!name) return res.status(400).json({ error: 'name required' });
   const tolerance = Array.isArray(grooming_tolerance) ? grooming_tolerance : [];
   const charTags = Array.isArray(character_tags) ? character_tags : [];
   const cosmetics = Array.isArray(cosmetics_used) ? cosmetics_used : [];
@@ -93,7 +93,7 @@ dogsRouter.post('/', async (req, res) => {
     returning *
     `,
     [
-      owner_id,
+      owner_id || null,
       name,
       breed || null,
       weight || null,
@@ -136,7 +136,7 @@ dogsRouter.put('/:id', async (req, res) => {
     returning *
     `,
     [
-      owner_id,
+      owner_id === undefined ? null : owner_id,
       name,
       breed || null,
       weight || null,

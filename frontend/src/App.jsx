@@ -900,6 +900,19 @@ export default function App() {
               }
               onCancel={() => setEditingOwner(null)}
               onOpenTagsAdmin={() => setTab('tags')}
+              allDogs={dogsQuery.data || []}
+              onAssociateDog={(dogId, ownerId) => {
+                const dog = dogsQuery.data?.find(d => d.id === dogId);
+                if (dog) {
+                  updateDog.mutate({ id: dogId, body: { ...dog, owner_id: ownerId } });
+                }
+              }}
+              onRemoveDogFromOwner={(dogId) => {
+                const dog = dogsQuery.data?.find(d => d.id === dogId);
+                if (dog) {
+                  updateDog.mutate({ id: dogId, body: { ...dog, owner_id: null } });
+                }
+              }}
             />
           )}
           <div className="space-y-3">

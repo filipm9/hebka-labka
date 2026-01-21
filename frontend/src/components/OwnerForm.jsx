@@ -16,7 +16,7 @@ function getAvailableCommunicationMethods() {
   return INITIAL_COMMUNICATION_METHODS;
 }
 
-export function OwnerForm({ initial, onSubmit, onCancel, onOpenTagsAdmin }) {
+export function OwnerForm({ initial, onSubmit, onCancel, onOpenTagsAdmin, allDogs = [], onAssociateDog, onRemoveDogFromOwner }) {
   const [communicationMethodsRefreshKey, setCommunicationMethodsRefreshKey] = useState(0);
   const availableCommunicationMethods = getAvailableCommunicationMethods();
   const [form, setForm] = useState({
@@ -24,6 +24,8 @@ export function OwnerForm({ initial, onSubmit, onCancel, onOpenTagsAdmin }) {
     communication_methods: [],
     important_info: '',
   });
+  const [showDogPicker, setShowDogPicker] = useState(false);
+  const [dogSearchQuery, setDogSearchQuery] = useState('');
   const importantInfoRef = useRef(null);
   const communicationDetailsRefs = useRef({});
   
@@ -483,6 +485,178 @@ export function OwnerForm({ initial, onSubmit, onCancel, onOpenTagsAdmin }) {
           />
         </div>
       </div>
+
+      {/* Associated Dogs Section - only show when editing an existing owner */}
+      {initial?.id && onAssociateDog && (
+        <>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+              <div className="w-full border-t-2 border-dashed border-blush-300"></div>
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-white px-4 py-1 text-sm font-bold text-blush-700 uppercase tracking-wider flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 1 1.261-.472 1.96-1.45 2.344-2.5"/>
+                  <path d="M14.267 5.172c0-1.39 1.577-2.493 3.5-2.172 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.855-1.45-2.239-2.5"/>
+                  <path d="M8 14v.5"/>
+                  <path d="M16 14v.5"/>
+                  <path d="M11.25 16.25h1.5L12 17l-.75-.75Z"/>
+                  <path d="M4.42 11.247A13.152 13.152 0 0 0 4 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444c0-1.061-.162-2.2-.493-3.309m-9.243-6.082A8.801 8.801 0 0 1 12 5c.78 0 1.5.108 2.161.306"/>
+                </svg>
+                Priradené psy
+              </span>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-blush-50/80 to-rose-50/60 rounded-3xl p-5 border border-blush-200 space-y-4">
+            {/* Current dogs for this owner */}
+            {(() => {
+              const ownerDogs = allDogs.filter(d => d.owner_id === initial.id);
+              return ownerDogs.length > 0 ? (
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-blush-600 uppercase tracking-wider">Aktuálne psy tohto majiteľa</p>
+                  <div className="flex flex-wrap gap-2">
+                    {ownerDogs.map(dog => (
+                      <span
+                        key={dog.id}
+                        className="px-4 py-2 rounded-full bg-blush-100 text-blush-700 text-sm font-medium flex items-center gap-2"
+                      >
+                        {dog.name}
+                        {dog.breed && <span className="text-blush-500 text-xs">({dog.breed})</span>}
+                        {onRemoveDogFromOwner && (
+                          <button
+                            type="button"
+                            onClick={() => onRemoveDogFromOwner(dog.id)}
+                            className="ml-1 text-blush-400 hover:text-blush-600 hover:bg-blush-200 rounded-full p-0.5 transition-colors"
+                            title="Odstrániť psa od majiteľa"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="18" y1="6" x2="6" y2="18"/>
+                              <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                          </button>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-blush-400 italic">Tento majiteľ nemá priradené žiadne psy.</p>
+              );
+            })()}
+
+            {/* Add existing dog button */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDogPicker(true)}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border-2 border-dashed border-blush-300 text-blush-600 hover:border-blush-400 hover:bg-blush-50/50 transition-all"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="16"/>
+                  <line x1="8" y1="12" x2="16" y2="12"/>
+                </svg>
+                Pridať existujúceho psa
+              </button>
+            </div>
+
+            {/* Dog picker modal */}
+            {showDogPicker && (
+              <div className="fixed inset-0 z-30 flex items-center justify-center bg-beige-900/30 backdrop-blur-sm px-4 py-8" onClick={() => { setShowDogPicker(false); setDogSearchQuery(''); }}>
+                <div className="bg-white rounded-3xl shadow-xl max-w-md w-full max-h-[80vh] overflow-hidden" onClick={e => e.stopPropagation()}>
+                  <div className="p-5 border-b border-beige-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-medium text-beige-800">Vybrať psa</h3>
+                      <button
+                        type="button"
+                        onClick={() => { setShowDogPicker(false); setDogSearchQuery(''); }}
+                        className="text-beige-400 hover:text-beige-600 p-1 rounded-full hover:bg-beige-100 transition-colors"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"/>
+                          <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={dogSearchQuery}
+                      onChange={(e) => setDogSearchQuery(e.target.value)}
+                      placeholder="Hľadať psa..."
+                      className="w-full rounded-2xl border border-beige-300 bg-white/80 px-4 py-2.5 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all text-sm"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="p-3 max-h-[50vh] overflow-y-auto">
+                    {(() => {
+                      const availableDogs = allDogs.filter(d => d.owner_id !== initial.id);
+                      const filteredDogs = availableDogs.filter(d => 
+                        dogSearchQuery === '' || 
+                        d.name.toLowerCase().includes(dogSearchQuery.toLowerCase()) ||
+                        (d.breed && d.breed.toLowerCase().includes(dogSearchQuery.toLowerCase())) ||
+                        (d.owner_name && d.owner_name.toLowerCase().includes(dogSearchQuery.toLowerCase()))
+                      );
+                      
+                      // Sort to show dogs without owner first
+                      const sortedDogs = [...filteredDogs].sort((a, b) => {
+                        if (!a.owner_id && b.owner_id) return -1;
+                        if (a.owner_id && !b.owner_id) return 1;
+                        return 0;
+                      });
+                      
+                      if (sortedDogs.length === 0) {
+                        return (
+                          <p className="text-sm text-beige-400 text-center py-8">
+                            {availableDogs.length === 0 
+                              ? 'Žiadni ďalší psi nie sú k dispozícii.' 
+                              : 'Žiadne výsledky pre hľadaný výraz.'}
+                          </p>
+                        );
+                      }
+                      
+                      return (
+                        <div className="space-y-1">
+                          {sortedDogs.map(dog => (
+                            <button
+                              key={dog.id}
+                              type="button"
+                              onClick={() => {
+                                onAssociateDog(dog.id, initial.id);
+                                setShowDogPicker(false);
+                                setDogSearchQuery('');
+                              }}
+                              className="w-full text-left px-4 py-3 rounded-2xl hover:bg-blush-50 transition-colors group"
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium text-beige-800 group-hover:text-blush-600 transition-colors">{dog.name}</p>
+                                  <p className="text-xs text-beige-500">
+                                    {dog.breed && <span>{dog.breed}</span>}
+                                    {dog.breed && (dog.owner_name || !dog.owner_id) && <span> · </span>}
+                                    {dog.owner_name ? (
+                                      <span>Majiteľ: {dog.owner_name}</span>
+                                    ) : !dog.owner_id && (
+                                      <span className="text-amber-500 italic">Bez majiteľa</span>
+                                    )}
+                                  </p>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-beige-300 group-hover:text-blush-400 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       <div className="flex gap-3 pt-2">
         <button
