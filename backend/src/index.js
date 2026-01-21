@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { config } from './config.js';
-import { migrateCheck } from './db.js';
+import { migrateCheck, runMigrations } from './db.js';
 import { authRouter } from './routes/auth.js';
 import { ownersRouter } from './routes/owners.js';
 import { dogsRouter } from './routes/dogs.js';
@@ -42,6 +42,8 @@ app.use((err, req, res, _next) => {
 
 async function start() {
   await migrateCheck();
+  await runMigrations();
+  console.log('Database migrations complete');
   app.listen(config.port, () => {
     console.log(`API listening on port ${config.port}`);
   });
