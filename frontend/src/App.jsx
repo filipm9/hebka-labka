@@ -40,6 +40,37 @@ function getAvailableCharacterTags() {
   return INITIAL_CHARACTER_TAGS;
 }
 
+const INITIAL_BREEDS = ['Zlatý retriever', 'Labrador', 'Nemecký ovčiak', 'Pudel', 'Bígl', 'Yorkshirský teriér'];
+const INITIAL_COMMUNICATION_METHODS = ['WhatsApp', 'Instagram', 'Phone'];
+
+function getAvailableBreeds() {
+  const stored = localStorage.getItem('dog_groomer_custom_breeds');
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed : INITIAL_BREEDS;
+    } catch {
+      return INITIAL_BREEDS;
+    }
+  }
+  localStorage.setItem('dog_groomer_custom_breeds', JSON.stringify(INITIAL_BREEDS));
+  return INITIAL_BREEDS;
+}
+
+function getAvailableCommunicationMethods() {
+  const stored = localStorage.getItem('dog_groomer_communication_methods');
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed : INITIAL_COMMUNICATION_METHODS;
+    } catch {
+      return INITIAL_COMMUNICATION_METHODS;
+    }
+  }
+  localStorage.setItem('dog_groomer_communication_methods', JSON.stringify(INITIAL_COMMUNICATION_METHODS));
+  return INITIAL_COMMUNICATION_METHODS;
+}
+
 function toTags(value) {
   if (Array.isArray(value)) return value;
   if (!value) return [];
@@ -100,6 +131,11 @@ export default function App() {
   const [newPassword, setNewPassword] = useState('');
   const [changePasswordError, setChangePasswordError] = useState(null);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [showAdvancedOwnerSearch, setShowAdvancedOwnerSearch] = useState(false);
+  const [ownerBreedFilter, setOwnerBreedFilter] = useState('');
+  const [ownerContactTagFilter, setOwnerContactTagFilter] = useState([]);
+  const [breedsRefreshKey, setBreedsRefreshKey] = useState(0);
+  const [communicationMethodsRefreshKey, setCommunicationMethodsRefreshKey] = useState(0);
   const [toast, setToast] = useState(null); // { message: string, type: 'success' | 'error' }
 
   // Helper to show toast
@@ -117,22 +153,32 @@ export default function App() {
 
   const availableTags = useMemo(() => getAvailableTags(), [tagsRefreshKey]);
   const availableCharacterTags = useMemo(() => getAvailableCharacterTags(), [characterTagsRefreshKey]);
+  const availableBreeds = useMemo(() => getAvailableBreeds(), [breedsRefreshKey]);
+  const availableCommunicationMethods = useMemo(() => getAvailableCommunicationMethods(), [communicationMethodsRefreshKey]);
 
   // Refresh available tags list when TagsAdmin updates localStorage
   // (and keep existing selected filters if still present)
   useEffect(() => {
     const handleTagsUpdated = () => setTagsRefreshKey((k) => k + 1);
     const handleCharacterTagsUpdated = () => setCharacterTagsRefreshKey((k) => k + 1);
+    const handleBreedsUpdated = () => setBreedsRefreshKey((k) => k + 1);
+    const handleCommunicationMethodsUpdated = () => setCommunicationMethodsRefreshKey((k) => k + 1);
     const handleStorageChange = () => {
       setTagsRefreshKey((k) => k + 1);
       setCharacterTagsRefreshKey((k) => k + 1);
+      setBreedsRefreshKey((k) => k + 1);
+      setCommunicationMethodsRefreshKey((k) => k + 1);
     };
     window.addEventListener('tagsUpdated', handleTagsUpdated);
     window.addEventListener('characterTagsUpdated', handleCharacterTagsUpdated);
+    window.addEventListener('breedsUpdated', handleBreedsUpdated);
+    window.addEventListener('communicationMethodsUpdated', handleCommunicationMethodsUpdated);
     window.addEventListener('storage', handleStorageChange);
     return () => {
       window.removeEventListener('tagsUpdated', handleTagsUpdated);
       window.removeEventListener('characterTagsUpdated', handleCharacterTagsUpdated);
+      window.removeEventListener('breedsUpdated', handleBreedsUpdated);
+      window.removeEventListener('communicationMethodsUpdated', handleCommunicationMethodsUpdated);
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
@@ -154,8 +200,8 @@ export default function App() {
   });
 
   const ownersQuery = useQuery({
-    queryKey: ['owners', ownerSearch],
-    queryFn: () => api.owners(ownerSearch),
+    queryKey: ['owners', ownerSearch, ownerBreedFilter, ownerContactTagFilter],
+    queryFn: () => api.owners({ search: ownerSearch, breed: ownerBreedFilter, contactTags: ownerContactTagFilter }),
     enabled: isAuthed && !meQuery.isLoading,
   });
 
@@ -715,12 +761,135 @@ export default function App() {
               onChange={(e) => setOwnerSearch(e.target.value)}
             />
             <button
+              onClick={() => setShowAdvancedOwnerSearch(!showAdvancedOwnerSearch)}
+              className={`px-4 py-3 rounded-2xl font-medium transition-all flex items-center gap-2 ${
+                showAdvancedOwnerSearch || ownerBreedFilter || ownerContactTagFilter.length > 0
+                  ? 'bg-beige-200 text-beige-700 border border-beige-300'
+                  : 'bg-white/80 text-beige-600 border border-beige-300 hover:bg-beige-50'
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className={`h-4 w-4 transition-transform ${showAdvancedOwnerSearch ? 'rotate-180' : ''}`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+              </svg>
+              <span className="hidden sm:inline">Filtre</span>
+              {(ownerBreedFilter || ownerContactTagFilter.length > 0) && (
+                <span className="bg-blush-400 text-white text-xs rounded-full px-2 py-0.5 min-w-[1.25rem]">
+                  {(ownerBreedFilter ? 1 : 0) + ownerContactTagFilter.length}
+                </span>
+              )}
+            </button>
+            <button
               onClick={() => setEditingOwner({})}
               className="bg-blush-400 text-white px-6 py-3 rounded-2xl font-medium hover:bg-blush-500 shadow-sm hover:shadow-md transition-all"
             >
               Pridať majiteľa
             </button>
           </div>
+          {showAdvancedOwnerSearch && (
+            <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
+              <div className="card py-4 border-l-4 border-l-amber-300">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                      <path d="M2 17l10 5 10-5"/>
+                      <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                    <p className="text-sm font-medium text-amber-700">Filtrovať podľa plemena psa</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-xs text-amber-600 hover:text-amber-700 px-3 py-1.5 rounded-full hover:bg-amber-50 transition-colors disabled:opacity-60"
+                    onClick={() => setOwnerBreedFilter('')}
+                    disabled={!ownerBreedFilter}
+                  >
+                    Vymazať filter
+                  </button>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {availableBreeds.map((breed) => {
+                    const selected = ownerBreedFilter === breed;
+                    return (
+                      <button
+                        key={breed}
+                        type="button"
+                        onClick={() => {
+                          setOwnerBreedFilter((current) =>
+                            current === breed ? '' : breed,
+                          );
+                        }}
+                        className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                          selected
+                            ? 'bg-amber-200 text-amber-700 border-amber-300 shadow-sm'
+                            : 'border-amber-200 text-amber-600 hover:border-amber-300 hover:bg-amber-50'
+                        }`}
+                      >
+                        {breed}
+                      </button>
+                    );
+                  })}
+                  {availableBreeds.length === 0 && (
+                    <p className="text-sm text-amber-400/80">Zatiaľ žiadne plemená.</p>
+                  )}
+                </div>
+              </div>
+              <div className="card py-4 border-l-4 border-l-blue-300">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    <p className="text-sm font-medium text-blue-700">Filtrovať podľa spôsobu komunikácie</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="text-xs text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded-full hover:bg-blue-50 transition-colors disabled:opacity-60"
+                    onClick={() => setOwnerContactTagFilter([])}
+                    disabled={ownerContactTagFilter.length === 0}
+                  >
+                    Vymazať filter
+                  </button>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {availableCommunicationMethods.map((method) => {
+                    const selected = ownerContactTagFilter.includes(method);
+                    return (
+                      <button
+                        key={method}
+                        type="button"
+                        onClick={() => {
+                          setOwnerContactTagFilter((current) =>
+                            current.includes(method)
+                              ? current.filter((t) => t !== method)
+                              : [...current, method],
+                          );
+                        }}
+                        className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                          selected
+                            ? 'bg-blue-200 text-blue-700 border-blue-300 shadow-sm'
+                            : 'border-blue-200 text-blue-600 hover:border-blue-300 hover:bg-blue-50'
+                        }`}
+                      >
+                        {method}
+                      </button>
+                    );
+                  })}
+                  {availableCommunicationMethods.length === 0 && (
+                    <p className="text-sm text-blue-400/80">Zatiaľ žiadne spôsoby komunikácie.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
           {editingOwner && (
             <OwnerForm
               initial={editingOwner}

@@ -50,7 +50,27 @@ export const api = {
   createDog: (body) => request('/dogs', { method: 'POST', body: JSON.stringify(body) }),
   updateDog: (id, body) => request(`/dogs/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   deleteDog: (id) => request(`/dogs/${id}`, { method: 'DELETE' }),
-  owners: (search = '') => request(`/owners?search=${encodeURIComponent(search)}`),
+  owners: (searchOrOptions = '') => {
+    const opts =
+      typeof searchOrOptions === 'string'
+        ? { search: searchOrOptions, breed: '', contactTags: [] }
+        : (searchOrOptions || {});
+    const params = new URLSearchParams();
+    params.set('search', opts.search || '');
+    if (opts.breed) {
+      params.set('breed', opts.breed);
+    }
+    if (Array.isArray(opts.contactTags) && opts.contactTags.length > 0) {
+      params.set(
+        'contactTags',
+        opts.contactTags
+          .map((t) => String(t).trim())
+          .filter(Boolean)
+          .join(','),
+      );
+    }
+    return request(`/owners?${params.toString()}`);
+  },
   createOwner: (body) => request('/owners', { method: 'POST', body: JSON.stringify(body) }),
   updateOwner: (id, body) => request(`/owners/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   deleteOwner: (id) => request(`/owners/${id}`, { method: 'DELETE' }),

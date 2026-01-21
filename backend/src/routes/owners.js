@@ -9,6 +9,27 @@ ownersRouter.use(authRequired);
 ownersRouter.get('/', async (req, res) => {
   const search = req.query.search || '';
   const like = `%${search}%`;
+  const breed = req.query.breed || '';
+  const breedLike = `%${breed}%`;
+  const contactTags = req.query.contactTags
+    ? req.query.contactTags.split(',').map((t) => t.trim()).filter(Boolean)
+    : [];
+
+  let contactTagCondition = '';
+  const params = [search, like, breed, breedLike];
+
+  if (contactTags.length > 0) {
+    // Build condition for matching any of the contact tags
+    const tagConditions = contactTags.map((_, i) => {
+      params.push(contactTags[i]);
+      return `EXISTS (
+        SELECT 1 FROM jsonb_array_elements(o.communication_methods) AS cm
+        WHERE cm->>'method' = $${params.length}
+      )`;
+    });
+    contactTagCondition = `AND (${tagConditions.join(' OR ')})`;
+  }
+
   const { rows } = await query(
     `
     select o.*, coalesce(count(d.id), 0) as dog_count
@@ -27,11 +48,17 @@ ownersRouter.get('/', async (req, res) => {
         )
       )
     )
+    and ($3 = '' or exists (
+      select 1 from dogs d3
+      where d3.owner_id = o.id
+      and d3.breed ilike $4
+    ))
+    ${contactTagCondition}
     group by o.id
     order by o.updated_at desc
     limit 50
     `,
-    [search, like],
+    params,
   );
   res.json(rows);
 });
