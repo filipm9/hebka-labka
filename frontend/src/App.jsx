@@ -560,10 +560,15 @@ export default function App() {
                         <p className="text-amber-800 font-medium">{selectedDog.breed}</p>
                       </div>
                     )}
-                    {selectedDog.weight && (
-                      <p className="bg-sage-50/50 rounded-2xl px-4 py-2">
-                        <span className="text-beige-500">Hmotnosť:</span> {selectedDog.weight} kg
-                      </p>
+                    {(selectedDog.weight || selectedDog.grooming_time_minutes) && (
+                      <div className="bg-sage-50/50 rounded-2xl px-4 py-2 space-y-1">
+                        {selectedDog.weight && (
+                          <p><span className="text-beige-500">Hmotnosť:</span> {selectedDog.weight} kg</p>
+                        )}
+                        {selectedDog.grooming_time_minutes && (
+                          <p><span className="text-beige-500">Čas úpravy:</span> {selectedDog.grooming_time_minutes} min</p>
+                        )}
+                      </div>
                     )}
                   </div>
                   {/* Zdravie Section */}

@@ -112,6 +112,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
     character_tags: [],
     character_notes: '',
     cosmetics_used: [],
+    grooming_time_minutes: '',
   });
   const [newOwner, setNewOwner] = useState({
     name: '',
@@ -187,6 +188,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
           : [],
         character_notes: initial.character_notes || '',
         cosmetics_used: Array.isArray(initial.cosmetics_used) ? initial.cosmetics_used : [],
+        grooming_time_minutes: initial.grooming_time_minutes || '',
       });
       setTimeout(() => {
         if (notesRef.current && initial.behavior_notes) {
@@ -309,6 +311,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
       health_notes: healthNotesRef.current?.innerHTML || '',
       character_notes: characterNotesRef.current?.innerHTML || '',
       cosmetics_used: form.cosmetics_used || [],
+      grooming_time_minutes: form.grooming_time_minutes ? Number(form.grooming_time_minutes) : null,
     };
     const ownerPayload = form.owner_id === 'new' ? newOwner : null;
     onSubmit({ dog: payload, newOwner: ownerPayload });
@@ -546,15 +549,30 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
             />
           </div>
         </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-beige-700">Vek (roky)</label>
-          <input
-            name="age"
-            inputMode="numeric"
-            value={form.age}
-            onChange={handleChange}
-            className="w-full rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
-          />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-beige-700">Vek (roky)</label>
+            <input
+              name="age"
+              inputMode="numeric"
+              value={form.age}
+              onChange={handleChange}
+              className="w-full rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-beige-700">Priemerný čas strávený na psovi (min)</label>
+            <input
+              name="grooming_time_minutes"
+              type="number"
+              inputMode="numeric"
+              min="0"
+              value={form.grooming_time_minutes}
+              onChange={handleChange}
+              className="w-full rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
+              placeholder="napr. 45"
+            />
+          </div>
         </div>
         {/* Dôležité info Section */}
         <div className="relative mt-6">

@@ -28,6 +28,7 @@ create table if not exists dogs (
   character_tags text[] default '{}',
   character_notes text,
   cosmetics_used jsonb default '[]'::jsonb,
+  grooming_time_minutes integer,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
