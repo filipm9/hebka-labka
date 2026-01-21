@@ -80,5 +80,9 @@ export const api = {
   createUser: (body) => request('/users', { method: 'POST', body: JSON.stringify(body) }),
   changeUserPassword: (id, body) => request(`/users/${id}/password`, { method: 'PUT', body: JSON.stringify(body) }),
   deleteUser: (id) => request(`/users/${id}`, { method: 'DELETE' }),
+  // Config endpoints (replaces localStorage)
+  getConfig: () => request('/config'),
+  getConfigKey: (key) => request(`/config/${key}`),
+  setConfigKey: (key, value) => request(`/config/${key}`, { method: 'PUT', body: JSON.stringify({ value }) }),
 };
 

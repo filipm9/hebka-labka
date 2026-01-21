@@ -1,58 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 
-const INITIAL_TAGS = ['Smrdí', 'Pĺzne', 'Kúše'];
-const INITIAL_CHARACTER_TAGS = ['Priateľský', 'Bojazlivý', 'Agresívny'];
-const INITIAL_BREEDS = ['Zlatý retriever', 'Labrador', 'Nemecký ovčiak', 'Pudel', 'Bígl', 'Yorkshirský teriér'];
-const INITIAL_COSMETICS = ['Šampón na citlivú pokožku', 'Kondicionér', 'Sprej na rozčesávanie', 'Parfum'];
-
-function getAvailableTags() {
-  const stored = localStorage.getItem('dog_groomer_custom_tags');
-  if (stored) {
-    return JSON.parse(stored);
-  }
-  // Initialize with default tags if no tags exist
-  saveCustomTags(INITIAL_TAGS);
-  return INITIAL_TAGS;
-}
-
-function saveCustomTags(tags) {
-  localStorage.setItem('dog_groomer_custom_tags', JSON.stringify(tags));
-}
-
-function getAvailableCharacterTags() {
-  const stored = localStorage.getItem('dog_groomer_character_tags');
-  if (stored) {
-    return JSON.parse(stored);
-  }
-  // Initialize with default character tags if none exist
-  saveCharacterTags(INITIAL_CHARACTER_TAGS);
-  return INITIAL_CHARACTER_TAGS;
-}
-
-function saveCharacterTags(tags) {
-  localStorage.setItem('dog_groomer_character_tags', JSON.stringify(tags));
-}
-
-function getAvailableBreeds() {
-  const stored = localStorage.getItem('dog_groomer_custom_breeds');
-  if (stored) {
-    return JSON.parse(stored);
-  }
-  // Initialize with default breeds if no breeds exist
-  localStorage.setItem('dog_groomer_custom_breeds', JSON.stringify(INITIAL_BREEDS));
-  return INITIAL_BREEDS;
-}
-
-function getAvailableCosmetics() {
-  const stored = localStorage.getItem('dog_groomer_custom_cosmetics');
-  if (stored) {
-    return JSON.parse(stored);
-  }
-  // Initialize with default cosmetics if none exist
-  localStorage.setItem('dog_groomer_custom_cosmetics', JSON.stringify(INITIAL_COSMETICS));
-  return INITIAL_COSMETICS;
-}
-
 function toTags(value) {
   if (Array.isArray(value)) return value;
   if (!value) return [];
@@ -88,18 +35,17 @@ function ageToDate(age) {
   return d.toISOString().slice(0, 10);
 }
 
-export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }) {
-  const [tagRefreshKey, setTagRefreshKey] = useState(0);
-  const [breedRefreshKey, setBreedRefreshKey] = useState(0);
-  const [characterTagRefreshKey, setCharacterTagRefreshKey] = useState(0);
-  const [cosmeticsRefreshKey, setCosmeticsRefreshKey] = useState(0);
-  const availableTags = getAvailableTags();
-  const availableBreeds = getAvailableBreeds();
-  const availableCharacterTags = getAvailableCharacterTags();
-  const availableCosmetics = getAvailableCosmetics();
-  
-  // Force re-render when tags are updated (tagRefreshKey changes)
-  // This ensures availableTags is recalculated
+export function DogForm({ 
+  owners, 
+  initial, 
+  onSubmit, 
+  onCancel, 
+  onOpenTagsAdmin,
+  availableTags = [],
+  availableCharacterTags = [],
+  availableBreeds = [],
+  availableCosmetics = [],
+}) {
   const [form, setForm] = useState({
     owner_ids: [],
     name: '',
@@ -124,31 +70,6 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
   const notesRef = useRef(null);
   const healthNotesRef = useRef(null);
   const characterNotesRef = useRef(null);
-
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setTagRefreshKey((k) => k + 1);
-      setBreedRefreshKey((k) => k + 1);
-      setCharacterTagRefreshKey((k) => k + 1);
-      setCosmeticsRefreshKey((k) => k + 1);
-    };
-    const handleTagsUpdated = () => setTagRefreshKey((k) => k + 1);
-    const handleBreedsUpdated = () => setBreedRefreshKey((k) => k + 1);
-    const handleCharacterTagsUpdated = () => setCharacterTagRefreshKey((k) => k + 1);
-    const handleCosmeticsUpdated = () => setCosmeticsRefreshKey((k) => k + 1);
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('tagsUpdated', handleTagsUpdated);
-    window.addEventListener('breedsUpdated', handleBreedsUpdated);
-    window.addEventListener('characterTagsUpdated', handleCharacterTagsUpdated);
-    window.addEventListener('cosmeticsUpdated', handleCosmeticsUpdated);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('tagsUpdated', handleTagsUpdated);
-      window.removeEventListener('breedsUpdated', handleBreedsUpdated);
-      window.removeEventListener('characterTagsUpdated', handleCharacterTagsUpdated);
-      window.removeEventListener('cosmeticsUpdated', handleCosmeticsUpdated);
-    };
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

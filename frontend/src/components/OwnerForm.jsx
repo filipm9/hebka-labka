@@ -1,24 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 
-const INITIAL_COMMUNICATION_METHODS = ['WhatsApp', 'Instagram', 'Phone'];
-
-function getAvailableCommunicationMethods() {
-  const stored = localStorage.getItem('dog_groomer_communication_methods');
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      return Array.isArray(parsed) ? parsed : INITIAL_COMMUNICATION_METHODS;
-    } catch {
-      return INITIAL_COMMUNICATION_METHODS;
-    }
-  }
-  localStorage.setItem('dog_groomer_communication_methods', JSON.stringify(INITIAL_COMMUNICATION_METHODS));
-  return INITIAL_COMMUNICATION_METHODS;
-}
-
-export function OwnerForm({ initial, onSubmit, onCancel, onOpenTagsAdmin, allDogs = [], onAssociateDog, onRemoveDogFromOwner }) {
-  const [communicationMethodsRefreshKey, setCommunicationMethodsRefreshKey] = useState(0);
-  const availableCommunicationMethods = getAvailableCommunicationMethods();
+export function OwnerForm({ 
+  initial, 
+  onSubmit, 
+  onCancel, 
+  onOpenTagsAdmin, 
+  allDogs = [], 
+  onAssociateDog, 
+  onRemoveDogFromOwner,
+  availableCommunicationMethods = [],
+}) {
   const [form, setForm] = useState({
     name: '',
     communication_methods: [],
@@ -35,19 +26,6 @@ export function OwnerForm({ initial, onSubmit, onCancel, onOpenTagsAdmin, allDog
     }
     return communicationDetailsRefs.current[method];
   };
-
-  useEffect(() => {
-    const handleCommunicationMethodsUpdated = () => setCommunicationMethodsRefreshKey((k) => k + 1);
-    const handleStorageChange = () => {
-      setCommunicationMethodsRefreshKey((k) => k + 1);
-    };
-    window.addEventListener('communicationMethodsUpdated', handleCommunicationMethodsUpdated);
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('communicationMethodsUpdated', handleCommunicationMethodsUpdated);
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
 
   useEffect(() => {
     if (initial) {

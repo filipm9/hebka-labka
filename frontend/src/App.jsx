@@ -9,68 +9,6 @@ import { TagsAdmin } from './components/TagsAdmin.jsx';
 import { UsersAdmin } from './components/UsersAdmin.jsx';
 import { ConfirmDialog } from './components/ConfirmDialog.jsx';
 
-const INITIAL_TAGS = ['Smrdí', 'Pĺzne', 'Kúše'];
-const INITIAL_CHARACTER_TAGS = ['Priateľský', 'Bojazlivý', 'Agresívny'];
-
-function getAvailableTags() {
-  const stored = localStorage.getItem('dog_groomer_custom_tags');
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      return Array.isArray(parsed) ? parsed : INITIAL_TAGS;
-    } catch {
-      return INITIAL_TAGS;
-    }
-  }
-  localStorage.setItem('dog_groomer_custom_tags', JSON.stringify(INITIAL_TAGS));
-  return INITIAL_TAGS;
-}
-
-function getAvailableCharacterTags() {
-  const stored = localStorage.getItem('dog_groomer_character_tags');
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      return Array.isArray(parsed) ? parsed : INITIAL_CHARACTER_TAGS;
-    } catch {
-      return INITIAL_CHARACTER_TAGS;
-    }
-  }
-  localStorage.setItem('dog_groomer_character_tags', JSON.stringify(INITIAL_CHARACTER_TAGS));
-  return INITIAL_CHARACTER_TAGS;
-}
-
-const INITIAL_BREEDS = ['Zlatý retriever', 'Labrador', 'Nemecký ovčiak', 'Pudel', 'Bígl', 'Yorkshirský teriér'];
-const INITIAL_COMMUNICATION_METHODS = ['WhatsApp', 'Instagram', 'Phone'];
-
-function getAvailableBreeds() {
-  const stored = localStorage.getItem('dog_groomer_custom_breeds');
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      return Array.isArray(parsed) ? parsed : INITIAL_BREEDS;
-    } catch {
-      return INITIAL_BREEDS;
-    }
-  }
-  localStorage.setItem('dog_groomer_custom_breeds', JSON.stringify(INITIAL_BREEDS));
-  return INITIAL_BREEDS;
-}
-
-function getAvailableCommunicationMethods() {
-  const stored = localStorage.getItem('dog_groomer_communication_methods');
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      return Array.isArray(parsed) ? parsed : INITIAL_COMMUNICATION_METHODS;
-    } catch {
-      return INITIAL_COMMUNICATION_METHODS;
-    }
-  }
-  localStorage.setItem('dog_groomer_communication_methods', JSON.stringify(INITIAL_COMMUNICATION_METHODS));
-  return INITIAL_COMMUNICATION_METHODS;
-}
-
 function toTags(value) {
   if (Array.isArray(value)) return value;
   if (!value) return [];
@@ -117,8 +55,6 @@ export default function App() {
   const [dogSearch, setDogSearch] = useState('');
   const [dogTagFilter, setDogTagFilter] = useState([]);
   const [dogCharacterTagFilter, setDogCharacterTagFilter] = useState([]);
-  const [tagsRefreshKey, setTagsRefreshKey] = useState(0);
-  const [characterTagsRefreshKey, setCharacterTagsRefreshKey] = useState(0);
   const [ownerSearch, setOwnerSearch] = useState('');
   const [editingDog, setEditingDog] = useState(null);
   const [selectedDog, setSelectedDog] = useState(null);
@@ -134,8 +70,6 @@ export default function App() {
   const [showAdvancedOwnerSearch, setShowAdvancedOwnerSearch] = useState(false);
   const [ownerBreedFilter, setOwnerBreedFilter] = useState('');
   const [ownerContactTagFilter, setOwnerContactTagFilter] = useState([]);
-  const [breedsRefreshKey, setBreedsRefreshKey] = useState(0);
-  const [communicationMethodsRefreshKey, setCommunicationMethodsRefreshKey] = useState(0);
   const [toast, setToast] = useState(null); // { message: string, type: 'success' | 'error' }
 
   // Helper to show toast
@@ -151,39 +85,38 @@ export default function App() {
     }
   }, [toast]);
 
-  const availableTags = useMemo(() => getAvailableTags(), [tagsRefreshKey]);
-  const availableCharacterTags = useMemo(() => getAvailableCharacterTags(), [characterTagsRefreshKey]);
-  const availableBreeds = useMemo(() => getAvailableBreeds(), [breedsRefreshKey]);
-  const availableCommunicationMethods = useMemo(() => getAvailableCommunicationMethods(), [communicationMethodsRefreshKey]);
+  // Fetch config from database
+  const configQuery = useQuery({
+    queryKey: ['config'],
+    queryFn: api.getConfig,
+    enabled: isAuthed && !meQuery.isLoading,
+  });
 
-  // Refresh available tags list when TagsAdmin updates localStorage
-  // (and keep existing selected filters if still present)
-  useEffect(() => {
-    const handleTagsUpdated = () => setTagsRefreshKey((k) => k + 1);
-    const handleCharacterTagsUpdated = () => setCharacterTagsRefreshKey((k) => k + 1);
-    const handleBreedsUpdated = () => setBreedsRefreshKey((k) => k + 1);
-    const handleCommunicationMethodsUpdated = () => setCommunicationMethodsRefreshKey((k) => k + 1);
-    const handleStorageChange = () => {
-      setTagsRefreshKey((k) => k + 1);
-      setCharacterTagsRefreshKey((k) => k + 1);
-      setBreedsRefreshKey((k) => k + 1);
-      setCommunicationMethodsRefreshKey((k) => k + 1);
-    };
-    window.addEventListener('tagsUpdated', handleTagsUpdated);
-    window.addEventListener('characterTagsUpdated', handleCharacterTagsUpdated);
-    window.addEventListener('breedsUpdated', handleBreedsUpdated);
-    window.addEventListener('communicationMethodsUpdated', handleCommunicationMethodsUpdated);
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('tagsUpdated', handleTagsUpdated);
-      window.removeEventListener('characterTagsUpdated', handleCharacterTagsUpdated);
-      window.removeEventListener('breedsUpdated', handleBreedsUpdated);
-      window.removeEventListener('communicationMethodsUpdated', handleCommunicationMethodsUpdated);
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
+  const availableTags = configQuery.data?.health_tags || [];
+  const availableCharacterTags = configQuery.data?.character_tags || [];
+  const availableBreeds = configQuery.data?.breeds || [];
+  const availableCommunicationMethods = configQuery.data?.communication_methods || [];
 
   const queryClient = useQueryClient();
+
+  // Refresh config when TagsAdmin updates it
+  useEffect(() => {
+    const handleConfigUpdated = () => {
+      queryClient.invalidateQueries({ queryKey: ['config'] });
+    };
+    window.addEventListener('tagsUpdated', handleConfigUpdated);
+    window.addEventListener('characterTagsUpdated', handleConfigUpdated);
+    window.addEventListener('breedsUpdated', handleConfigUpdated);
+    window.addEventListener('communicationMethodsUpdated', handleConfigUpdated);
+    window.addEventListener('cosmeticsUpdated', handleConfigUpdated);
+    return () => {
+      window.removeEventListener('tagsUpdated', handleConfigUpdated);
+      window.removeEventListener('characterTagsUpdated', handleConfigUpdated);
+      window.removeEventListener('breedsUpdated', handleConfigUpdated);
+      window.removeEventListener('communicationMethodsUpdated', handleConfigUpdated);
+      window.removeEventListener('cosmeticsUpdated', handleConfigUpdated);
+    };
+  }, [queryClient]);
 
   // Ensure queries fetch when authentication completes
   useEffect(() => {
@@ -583,6 +516,10 @@ export default function App() {
               }
               onCancel={() => setEditingDog(null)}
               onOpenTagsAdmin={() => setTab('tags')}
+              availableTags={availableTags}
+              availableCharacterTags={availableCharacterTags}
+              availableBreeds={availableBreeds}
+              availableCosmetics={configQuery.data?.cosmetics || []}
             />
           )}
           {dogsQuery.isLoading && (
@@ -965,6 +902,7 @@ export default function App() {
                 queryClient.invalidateQueries({ queryKey: ['dogs'] });
                 queryClient.invalidateQueries({ queryKey: ['owners'] });
               }}
+              availableCommunicationMethods={availableCommunicationMethods}
             />
           )}
           <div className="space-y-3">

@@ -2,77 +2,6 @@ import { useState, useEffect } from 'react';
 import { api } from '../api/client.js';
 import { ConfirmDialog } from './ConfirmDialog.jsx';
 
-const INITIAL_TAGS = ['Smrdí', 'Pĺzne', 'Kúše'];
-const INITIAL_CHARACTER_TAGS = ['Priateľský', 'Bojazlivý', 'Agresívny'];
-const INITIAL_BREEDS = ['Zlatý retriever', 'Labrador', 'Nemecký ovčiak', 'Pudel', 'Bígl', 'Yorkshirský teriér'];
-const INITIAL_COSMETICS = ['Šampón na citlivú pokožku', 'Kondicionér', 'Sprej na rozčesávanie', 'Parfum'];
-const INITIAL_COMMUNICATION_METHODS = ['WhatsApp', 'Instagram', 'Phone'];
-
-function getCustomTags() {
-  const stored = localStorage.getItem('dog_groomer_custom_tags');
-  if (stored) {
-    return JSON.parse(stored);
-  }
-  saveCustomTags(INITIAL_TAGS);
-  return INITIAL_TAGS;
-}
-
-function saveCustomTags(tags) {
-  localStorage.setItem('dog_groomer_custom_tags', JSON.stringify(tags));
-}
-
-function getCustomCharacterTags() {
-  const stored = localStorage.getItem('dog_groomer_character_tags');
-  if (stored) {
-    return JSON.parse(stored);
-  }
-  saveCustomCharacterTags(INITIAL_CHARACTER_TAGS);
-  return INITIAL_CHARACTER_TAGS;
-}
-
-function saveCustomCharacterTags(tags) {
-  localStorage.setItem('dog_groomer_character_tags', JSON.stringify(tags));
-}
-
-function getCustomBreeds() {
-  const stored = localStorage.getItem('dog_groomer_custom_breeds');
-  if (stored) {
-    return JSON.parse(stored);
-  }
-  saveCustomBreeds(INITIAL_BREEDS);
-  return INITIAL_BREEDS;
-}
-
-function saveCustomBreeds(breeds) {
-  localStorage.setItem('dog_groomer_custom_breeds', JSON.stringify(breeds));
-}
-
-function getCustomCosmetics() {
-  const stored = localStorage.getItem('dog_groomer_custom_cosmetics');
-  if (stored) {
-    return JSON.parse(stored);
-  }
-  saveCustomCosmetics(INITIAL_COSMETICS);
-  return INITIAL_COSMETICS;
-}
-
-function saveCustomCosmetics(cosmetics) {
-  localStorage.setItem('dog_groomer_custom_cosmetics', JSON.stringify(cosmetics));
-}
-
-function getCustomCommunicationMethods() {
-  const stored = localStorage.getItem('dog_groomer_communication_methods');
-  if (stored) {
-    return JSON.parse(stored);
-  }
-  saveCustomCommunicationMethods(INITIAL_COMMUNICATION_METHODS);
-  return INITIAL_COMMUNICATION_METHODS;
-}
-
-function saveCustomCommunicationMethods(methods) {
-  localStorage.setItem('dog_groomer_communication_methods', JSON.stringify(methods));
-}
-
 function toTags(value) {
   if (Array.isArray(value)) return value;
   if (!value) return [];
@@ -91,11 +20,11 @@ function toTags(value) {
 }
 
 export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
-  const [customTags, setCustomTags] = useState(getCustomTags());
-  const [customCharacterTags, setCustomCharacterTags] = useState(getCustomCharacterTags());
-  const [customBreeds, setCustomBreeds] = useState(getCustomBreeds());
-  const [customCosmetics, setCustomCosmetics] = useState(getCustomCosmetics());
-  const [customCommunicationMethods, setCustomCommunicationMethods] = useState(getCustomCommunicationMethods());
+  const [customTags, setCustomTags] = useState([]);
+  const [customCharacterTags, setCustomCharacterTags] = useState([]);
+  const [customBreeds, setCustomBreeds] = useState([]);
+  const [customCosmetics, setCustomCosmetics] = useState([]);
+  const [customCommunicationMethods, setCustomCommunicationMethods] = useState([]);
   const [editingTag, setEditingTag] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [editingCharacterTag, setEditingCharacterTag] = useState(null);
@@ -112,6 +41,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
   const [newCosmetic, setNewCosmetic] = useState('');
   const [newCommunicationMethod, setNewCommunicationMethod] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [cosmeticNotesModal, setCosmeticNotesModal] = useState(null);
   const [loadingNotes, setLoadingNotes] = useState(false);
@@ -123,16 +53,29 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
     }
   };
 
+  // Load config from database on mount
   useEffect(() => {
-    setCustomTags(getCustomTags());
-    setCustomCharacterTags(getCustomCharacterTags());
-    setCustomBreeds(getCustomBreeds());
-    setCustomCosmetics(getCustomCosmetics());
-    setCustomCommunicationMethods(getCustomCommunicationMethods());
+    async function loadConfig() {
+      try {
+        setIsLoading(true);
+        const config = await api.getConfig();
+        setCustomTags(config.health_tags || []);
+        setCustomCharacterTags(config.character_tags || []);
+        setCustomBreeds(config.breeds || []);
+        setCustomCosmetics(config.cosmetics || []);
+        setCustomCommunicationMethods(config.communication_methods || []);
+      } catch (error) {
+        console.error('Failed to load config:', error);
+        showToast('Chyba pri načítavaní konfigurácie', 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadConfig();
   }, []);
 
   // --- Tags handlers ---
-  const handleAddTag = () => {
+  const handleAddTag = async () => {
     const val = newTag.trim();
     if (!val) return;
     if (customTags.includes(val)) {
@@ -140,11 +83,16 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       return;
     }
     const updated = [...customTags, val];
-    saveCustomTags(updated);
-    setCustomTags(updated);
-    setNewTag('');
-    window.dispatchEvent(new Event('tagsUpdated'));
-    showToast('Zdravotný tag bol pridaný');
+    try {
+      await api.setConfigKey('health_tags', updated);
+      setCustomTags(updated);
+      setNewTag('');
+      window.dispatchEvent(new Event('tagsUpdated'));
+      showToast('Zdravotný tag bol pridaný');
+    } catch (error) {
+      console.error('Error adding tag:', error);
+      showToast('Chyba pri pridávaní tagu', 'error');
+    }
   };
 
   const handleDeleteTag = async (tag) => {
@@ -179,7 +127,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
           }
           
           const updated = customTags.filter((t) => t !== tag);
-          saveCustomTags(updated);
+          await api.setConfigKey('health_tags', updated);
           setCustomTags(updated);
           window.dispatchEvent(new Event('tagsUpdated'));
           if (onTagUpdate) onTagUpdate();
@@ -240,7 +188,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       }
       
       const updated = customTags.map((t) => (t === editingTag ? val : t));
-      saveCustomTags(updated);
+      await api.setConfigKey('health_tags', updated);
       setCustomTags(updated);
       setEditingTag(null);
       setEditValue('');
@@ -261,7 +209,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
   };
 
   // --- Breeds handlers ---
-  const handleAddBreed = () => {
+  const handleAddBreed = async () => {
     const val = newBreed.trim();
     if (!val) return;
     if (customBreeds.includes(val)) {
@@ -269,11 +217,16 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       return;
     }
     const updated = [...customBreeds, val];
-    saveCustomBreeds(updated);
-    setCustomBreeds(updated);
-    setNewBreed('');
-    window.dispatchEvent(new Event('breedsUpdated'));
-    showToast('Plemeno bolo pridané');
+    try {
+      await api.setConfigKey('breeds', updated);
+      setCustomBreeds(updated);
+      setNewBreed('');
+      window.dispatchEvent(new Event('breedsUpdated'));
+      showToast('Plemeno bolo pridané');
+    } catch (error) {
+      console.error('Error adding breed:', error);
+      showToast('Chyba pri pridávaní plemena', 'error');
+    }
   };
 
   const handleDeleteBreed = async (breed) => {
@@ -302,7 +255,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
           }
           
           const updated = customBreeds.filter((b) => b !== breed);
-          saveCustomBreeds(updated);
+          await api.setConfigKey('breeds', updated);
           setCustomBreeds(updated);
           window.dispatchEvent(new Event('breedsUpdated'));
           if (onTagUpdate) onTagUpdate();
@@ -357,7 +310,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       }
       
       const updated = customBreeds.map((b) => (b === editingBreed ? val : b));
-      saveCustomBreeds(updated);
+      await api.setConfigKey('breeds', updated);
       setCustomBreeds(updated);
       setEditingBreed(null);
       setEditBreedValue('');
@@ -378,7 +331,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
   };
 
   // --- Character Tags handlers ---
-  const handleAddCharacterTag = () => {
+  const handleAddCharacterTag = async () => {
     const val = newCharacterTag.trim();
     if (!val) return;
     if (customCharacterTags.includes(val)) {
@@ -386,11 +339,16 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       return;
     }
     const updated = [...customCharacterTags, val];
-    saveCustomCharacterTags(updated);
-    setCustomCharacterTags(updated);
-    setNewCharacterTag('');
-    window.dispatchEvent(new Event('characterTagsUpdated'));
-    showToast('Povahový tag bol pridaný');
+    try {
+      await api.setConfigKey('character_tags', updated);
+      setCustomCharacterTags(updated);
+      setNewCharacterTag('');
+      window.dispatchEvent(new Event('characterTagsUpdated'));
+      showToast('Povahový tag bol pridaný');
+    } catch (error) {
+      console.error('Error adding character tag:', error);
+      showToast('Chyba pri pridávaní tagu', 'error');
+    }
   };
 
   const handleDeleteCharacterTag = async (tag) => {
@@ -424,7 +382,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
           }
           
           const updated = customCharacterTags.filter((t) => t !== tag);
-          saveCustomCharacterTags(updated);
+          await api.setConfigKey('character_tags', updated);
           setCustomCharacterTags(updated);
           window.dispatchEvent(new Event('characterTagsUpdated'));
           if (onTagUpdate) onTagUpdate();
@@ -484,7 +442,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       }
       
       const updated = customCharacterTags.map((t) => (t === editingCharacterTag ? val : t));
-      saveCustomCharacterTags(updated);
+      await api.setConfigKey('character_tags', updated);
       setCustomCharacterTags(updated);
       setEditingCharacterTag(null);
       setEditCharacterValue('');
@@ -505,7 +463,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
   };
 
   // --- Communication Methods handlers ---
-  const handleAddCommunicationMethod = () => {
+  const handleAddCommunicationMethod = async () => {
     const val = newCommunicationMethod.trim();
     if (!val) return;
     if (customCommunicationMethods.includes(val)) {
@@ -513,11 +471,16 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       return;
     }
     const updated = [...customCommunicationMethods, val];
-    saveCustomCommunicationMethods(updated);
-    setCustomCommunicationMethods(updated);
-    setNewCommunicationMethod('');
-    window.dispatchEvent(new Event('communicationMethodsUpdated'));
-    showToast('Spôsob komunikácie bol pridaný');
+    try {
+      await api.setConfigKey('communication_methods', updated);
+      setCustomCommunicationMethods(updated);
+      setNewCommunicationMethod('');
+      window.dispatchEvent(new Event('communicationMethodsUpdated'));
+      showToast('Spôsob komunikácie bol pridaný');
+    } catch (error) {
+      console.error('Error adding communication method:', error);
+      showToast('Chyba pri pridávaní spôsobu komunikácie', 'error');
+    }
   };
 
   const handleDeleteCommunicationMethod = async (method) => {
@@ -544,7 +507,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
           }
           
           const updated = customCommunicationMethods.filter((m) => m !== method);
-          saveCustomCommunicationMethods(updated);
+          await api.setConfigKey('communication_methods', updated);
           setCustomCommunicationMethods(updated);
           window.dispatchEvent(new Event('communicationMethodsUpdated'));
           if (onTagUpdate) onTagUpdate();
@@ -599,7 +562,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       }
       
       const updated = customCommunicationMethods.map((m) => (m === editingCommunicationMethod ? val : m));
-      saveCustomCommunicationMethods(updated);
+      await api.setConfigKey('communication_methods', updated);
       setCustomCommunicationMethods(updated);
       setEditingCommunicationMethod(null);
       setEditCommunicationMethodValue('');
@@ -620,7 +583,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
   };
 
   // --- Cosmetics handlers ---
-  const handleAddCosmetic = () => {
+  const handleAddCosmetic = async () => {
     const val = newCosmetic.trim();
     if (!val) return;
     if (customCosmetics.includes(val)) {
@@ -628,11 +591,16 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       return;
     }
     const updated = [...customCosmetics, val];
-    saveCustomCosmetics(updated);
-    setCustomCosmetics(updated);
-    setNewCosmetic('');
-    window.dispatchEvent(new Event('cosmeticsUpdated'));
-    showToast('Kozmetický produkt bol pridaný');
+    try {
+      await api.setConfigKey('cosmetics', updated);
+      setCustomCosmetics(updated);
+      setNewCosmetic('');
+      window.dispatchEvent(new Event('cosmeticsUpdated'));
+      showToast('Kozmetický produkt bol pridaný');
+    } catch (error) {
+      console.error('Error adding cosmetic:', error);
+      showToast('Chyba pri pridávaní kozmetiky', 'error');
+    }
   };
 
   const handleDeleteCosmetic = async (cosmetic) => {
@@ -667,7 +635,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
           }
           
           const updated = customCosmetics.filter((c) => c !== cosmetic);
-          saveCustomCosmetics(updated);
+          await api.setConfigKey('cosmetics', updated);
           setCustomCosmetics(updated);
           window.dispatchEvent(new Event('cosmeticsUpdated'));
           if (onTagUpdate) onTagUpdate();
@@ -730,7 +698,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       }
       
       const updated = customCosmetics.map((c) => (c === editingCosmetic ? val : c));
-      saveCustomCosmetics(updated);
+      await api.setConfigKey('cosmetics', updated);
       setCustomCosmetics(updated);
       setEditingCosmetic(null);
       setEditCosmeticValue('');
@@ -784,6 +752,20 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
   const handleCloseCosmeticNotesModal = () => {
     setCosmeticNotesModal(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="card space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-light text-beige-800">Konfigurácia hodnôt</h2>
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-sage-500 border-t-transparent"></div>
+          <span className="ml-3 text-beige-600">Načítavam konfiguráciu...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="card space-y-6">

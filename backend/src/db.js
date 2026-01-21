@@ -17,6 +17,28 @@ export async function migrateCheck() {
 }
 
 export async function runMigrations() {
+  // Create app_config table for storing configuration (replaces localStorage)
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS app_config (
+      id serial PRIMARY KEY,
+      config_key text NOT NULL UNIQUE,
+      config_value jsonb NOT NULL DEFAULT '[]'::jsonb,
+      created_at timestamp with time zone DEFAULT now(),
+      updated_at timestamp with time zone DEFAULT now()
+    );
+  `);
+
+  // Insert default config values if they don't exist
+  await pool.query(`
+    INSERT INTO app_config (config_key, config_value) VALUES
+      ('health_tags', '["Smrdí", "Pĺzne", "Kúše"]'::jsonb),
+      ('character_tags', '["Priateľský", "Bojazlivý", "Agresívny"]'::jsonb),
+      ('breeds', '["Zlatý retriever", "Labrador", "Nemecký ovčiak", "Pudel", "Bígl", "Yorkshirský teriér"]'::jsonb),
+      ('cosmetics', '["Šampón na citlivú pokožku", "Kondicionér", "Sprej na rozčesávanie", "Parfum"]'::jsonb),
+      ('communication_methods', '["WhatsApp", "Instagram", "Phone"]'::jsonb)
+    ON CONFLICT (config_key) DO NOTHING;
+  `);
+
   // Add health_notes column if it doesn't exist
   await pool.query(`
     DO $$
