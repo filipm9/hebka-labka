@@ -26,7 +26,7 @@ authRouter.post('/login', async (req, res) => {
   const token = signToken(user);
   res.cookie(config.sessionName, token, {
     httpOnly: true,
-    secure: config.cookieSecure === 'true',
+    secure: config.cookieSecure,
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
