@@ -388,7 +388,7 @@ export function DogForm({
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
             <label className="text-sm font-medium text-beige-700 flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-peach-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12 2L2 7l10 5 10-5-10-5z"/>
                 <path d="M2 17l10 5 10-5"/>
                 <path d="M2 12l10 5 10-5"/>
@@ -401,15 +401,15 @@ export function DogForm({
                 onClick={() => setIsBreedDropdownOpen(!isBreedDropdownOpen)}
                 className={`w-full rounded-2xl border px-4 py-3 pr-10 text-left text-beige-800 transition-all ${
                   isBreedDropdownOpen
-                    ? 'bg-white border-amber-300 ring-2 ring-amber-200'
-                    : 'border-amber-200 bg-white/80 hover:bg-white focus:bg-white focus:border-amber-300'
+                    ? 'bg-white border-peach-300 ring-2 ring-peach-200'
+                    : 'border-peach-200 bg-white/80 hover:bg-white focus:bg-white focus:border-peach-300'
                 } ${!form.breed ? 'text-beige-400' : ''}`}
               >
                 {form.breed || 'Vyberte plemeno'}
               </button>
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg
-                  className={`w-5 h-5 text-amber-500 transition-transform ${isBreedDropdownOpen ? 'rotate-180' : ''}`}
+                  className={`w-5 h-5 text-peach-500 transition-transform ${isBreedDropdownOpen ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -424,7 +424,7 @@ export function DogForm({
                 </svg>
               </div>
               {isBreedDropdownOpen && (
-                <div className="absolute z-10 w-full mt-2 bg-white rounded-2xl border border-amber-200 shadow-lg overflow-hidden">
+                <div className="absolute z-10 w-full mt-2 bg-white rounded-2xl border border-peach-200 shadow-lg overflow-hidden">
                   <div className="max-h-60 overflow-y-auto">
                     <button
                       type="button"
@@ -434,8 +434,8 @@ export function DogForm({
                       }}
                       className={`w-full text-left px-4 py-3 text-sm transition-colors ${
                         !form.breed
-                          ? 'bg-amber-50 text-amber-700'
-                          : 'text-beige-700 hover:bg-amber-50 hover:text-amber-700'
+                          ? 'bg-peach-50 text-peach-700'
+                          : 'text-beige-700 hover:bg-peach-50 hover:text-peach-700'
                       }`}
                     >
                       Bez plemena
@@ -450,8 +450,8 @@ export function DogForm({
                         }}
                         className={`w-full text-left px-4 py-3 text-sm transition-colors ${
                           form.breed === breed
-                            ? 'bg-amber-50 text-amber-700'
-                            : 'text-beige-700 hover:bg-amber-50 hover:text-amber-700'
+                            ? 'bg-peach-50 text-peach-700'
+                            : 'text-beige-700 hover:bg-peach-50 hover:text-peach-700'
                         }`}
                       >
                         {breed}
@@ -501,10 +501,10 @@ export function DogForm({
         {/* Dôležité info Section */}
         <div className="relative mt-6">
           <div className="absolute inset-0 flex items-center" aria-hidden="true">
-            <div className="w-full border-t-2 border-dashed border-amber-300"></div>
+            <div className="w-full border-t-2 border-dashed border-peach-300"></div>
           </div>
           <div className="relative flex justify-center">
-            <span className="bg-white px-4 py-1 text-sm font-bold text-amber-700 uppercase tracking-wider flex items-center gap-2">
+            <span className="bg-white px-4 py-1 text-sm font-bold text-peach-700 uppercase tracking-wider flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
@@ -516,12 +516,12 @@ export function DogForm({
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-amber-50 via-yellow-50/80 to-orange-50/60 rounded-3xl p-5 border-2 border-amber-200 shadow-sm">
-          <div className="border-2 border-amber-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-            <div className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-amber-100 to-yellow-50 border-b border-amber-200">
+        <div className="bg-gradient-to-br from-peach-100 via-peach-50 to-sand-50 rounded-3xl p-5 border-2 border-peach-200 shadow-sm">
+          <div className="border-2 border-peach-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+            <div className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-peach-100 to-sand-50 border-b border-peach-200">
               <button
                 type="button"
-                className="p-2 hover:bg-white rounded-xl text-amber-600 hover:text-amber-700 transition-colors"
+                className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-peach-700 transition-colors"
                 title="Tučné"
                 onClick={(e) => {
                   e.preventDefault();
@@ -553,7 +553,7 @@ export function DogForm({
               </button>
               <button
                 type="button"
-                className="p-2 hover:bg-white rounded-xl text-amber-600 hover:text-amber-700 transition-colors"
+                className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-peach-700 transition-colors"
                 title="Kurzíva"
                 onClick={(e) => {
                   e.preventDefault();
@@ -578,10 +578,10 @@ export function DogForm({
                   />
                 </svg>
               </button>
-              <div className="w-px h-5 bg-amber-300 mx-1" />
+              <div className="w-px h-5 bg-peach-300 mx-1" />
               <button
                 type="button"
-                className="p-2 hover:bg-white rounded-xl text-amber-600 hover:text-amber-700 transition-colors"
+                className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-peach-700 transition-colors"
                 title="Zoznam s odrážkami"
                 onClick={(e) => {
                   e.preventDefault();
@@ -647,7 +647,7 @@ export function DogForm({
               </button>
               <button
                 type="button"
-                className="p-2 hover:bg-white rounded-xl text-amber-600 hover:text-amber-700 transition-colors flex items-center justify-center"
+                className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-peach-700 transition-colors flex items-center justify-center"
                 title="Číslovaný zoznam"
                 onClick={(e) => {
                   e.preventDefault();
@@ -704,7 +704,7 @@ export function DogForm({
               ref={notesRef}
               contentEditable
               suppressContentEditableWarning
-              className="w-full px-4 py-3 min-h-[160px] bg-white focus:outline-none prose prose-sm max-w-none text-amber-900"
+              className="w-full px-4 py-3 min-h-[160px] bg-white focus:outline-none prose prose-sm max-w-none text-sand-900"
               onInput={handleNotesInput}
               placeholder="Sem napíš všetko dôležité..."
               style={{
@@ -719,10 +719,10 @@ export function DogForm({
       {/* Zdravie Section - Visually Separated */}
       <div className="relative mt-8">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t-2 border-dashed border-emerald-200"></div>
+          <div className="w-full border-t-2 border-dashed border-peach-200"></div>
         </div>
         <div className="relative flex justify-center">
-          <span className="bg-white px-4 py-1 text-sm font-semibold text-emerald-600 uppercase tracking-wider flex items-center gap-2">
+          <span className="bg-white px-4 py-1 text-sm font-semibold text-peach-600 uppercase tracking-wider flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19.5 12.572l-7.5 7.428-7.5-7.428a5 5 0 1 1 7.5-6.566 5 5 0 1 1 7.5 6.566z"/>
             </svg>
@@ -731,15 +731,15 @@ export function DogForm({
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-emerald-50/80 to-teal-50/60 rounded-3xl p-6 border border-emerald-100 space-y-5">
+      <div className="bg-gradient-to-br from-peach-50 to-sand-50 rounded-3xl p-6 border border-peach-100 space-y-5">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-emerald-700">Zdravotné tagy</label>
+            <label className="text-sm font-medium text-sand-700">Zdravotné tagy</label>
             {onOpenTagsAdmin && (
               <button
                 type="button"
                 onClick={onOpenTagsAdmin}
-                className="text-emerald-500 hover:text-emerald-600 transition-colors px-3 py-1.5 rounded-full hover:bg-emerald-100 text-xs font-medium flex items-center gap-1.5"
+                className="text-peach-500 hover:text-peach-600 transition-colors px-3 py-1.5 rounded-full hover:bg-peach-100 text-xs font-medium flex items-center gap-1.5"
                 title="Spravovať tagy"
               >
                 <svg
@@ -773,8 +773,8 @@ export function DogForm({
                 onClick={() => handleTagToggle(tag)}
                 className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
                   toTags(form.grooming_tolerance).includes(tag)
-                    ? 'bg-emerald-200 text-emerald-800 border-emerald-300 shadow-sm'
-                    : 'border-emerald-200 text-emerald-600 hover:border-emerald-300 hover:bg-emerald-100/80 bg-white/60'
+                    ? 'bg-peach-200 text-sand-800 border-peach-300 shadow-sm'
+                    : 'border-peach-200 text-peach-600 hover:border-peach-300 hover:bg-peach-100/80 bg-white/60'
                 }`}
               >
                 {tag}
@@ -785,12 +785,12 @@ export function DogForm({
               .map((tag) => (
                 <span
                   key={tag}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-sm font-medium"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-peach-100 text-sand-700 text-sm font-medium"
                 >
                   {tag}
                   <button
                     type="button"
-                    className="text-emerald-500 hover:text-emerald-700 rounded-full hover:bg-emerald-200 p-0.5"
+                    className="text-peach-500 hover:text-sand-700 rounded-full hover:bg-peach-200 p-0.5"
                     onClick={() => handleTagToggle(tag)}
                   >
                     ×
@@ -798,18 +798,18 @@ export function DogForm({
                 </span>
               ))}
             {availableTags.length === 0 && toTags(form.grooming_tolerance).length === 0 && (
-              <p className="text-sm text-emerald-400 italic">Žiadne zdravotné tagy k dispozícii</p>
+              <p className="text-sm text-sand-400 italic">Žiadne zdravotné tagy k dispozícii</p>
             )}
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-emerald-700">Zdravotné poznámky</label>
-          <div className="border border-emerald-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-            <div className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-100">
+          <label className="text-sm font-medium text-sand-700">Zdravotné poznámky</label>
+          <div className="border border-peach-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+            <div className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-peach-50 to-sand-50 border-b border-peach-100">
               <button
                 type="button"
-                className="p-2 hover:bg-white rounded-xl text-emerald-600 hover:text-emerald-700 transition-colors"
+                className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-sand-700 transition-colors"
                 title="Tučné"
                 onClick={(e) => {
                   e.preventDefault();
@@ -833,7 +833,7 @@ export function DogForm({
               </button>
               <button
                 type="button"
-                className="p-2 hover:bg-white rounded-xl text-emerald-600 hover:text-emerald-700 transition-colors"
+                className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-sand-700 transition-colors"
                 title="Kurzíva"
                 onClick={(e) => {
                   e.preventDefault();
@@ -854,10 +854,10 @@ export function DogForm({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10 4h4M6 20h8M8 4v16M14 4v16" />
                 </svg>
               </button>
-              <div className="w-px h-5 bg-emerald-200 mx-1" />
+              <div className="w-px h-5 bg-peach-200 mx-1" />
               <button
                 type="button"
-                className="p-2 hover:bg-white rounded-xl text-emerald-600 hover:text-emerald-700 transition-colors"
+                className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-sand-700 transition-colors"
                 title="Zoznam s odrážkami"
                 onClick={(e) => {
                   e.preventDefault();
@@ -886,7 +886,7 @@ export function DogForm({
               ref={healthNotesRef}
               contentEditable
               suppressContentEditableWarning
-              className="w-full px-4 py-3 min-h-[100px] bg-white focus:outline-none prose prose-sm max-w-none text-emerald-800"
+              className="w-full px-4 py-3 min-h-[100px] bg-white focus:outline-none prose prose-sm max-w-none text-sand-800"
               onInput={handleHealthNotesInput}
               placeholder="Alergie, lieky, zdravotné problémy..."
               style={{
@@ -901,10 +901,10 @@ export function DogForm({
       {/* Povaha Section - Visually Separated */}
       <div className="relative mt-8">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t-2 border-dashed border-violet-200"></div>
+          <div className="w-full border-t-2 border-dashed border-peach-200"></div>
         </div>
         <div className="relative flex justify-center">
-          <span className="bg-white px-4 py-1 text-sm font-semibold text-violet-600 uppercase tracking-wider flex items-center gap-2">
+          <span className="bg-white px-4 py-1 text-sm font-semibold text-peach-600 uppercase tracking-wider flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/>
               <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
@@ -916,15 +916,15 @@ export function DogForm({
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-violet-50/80 to-purple-50/60 rounded-3xl p-6 border border-violet-100 space-y-5">
+      <div className="bg-gradient-to-br from-peach-100/60 to-sand-50 rounded-3xl p-6 border border-peach-100 space-y-5">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-violet-700">Povahové tagy</label>
+            <label className="text-sm font-medium text-sand-700">Povahové tagy</label>
             {onOpenTagsAdmin && (
               <button
                 type="button"
                 onClick={onOpenTagsAdmin}
-                className="text-violet-500 hover:text-violet-600 transition-colors px-3 py-1.5 rounded-full hover:bg-violet-100 text-xs font-medium flex items-center gap-1.5"
+                className="text-peach-500 hover:text-peach-600 transition-colors px-3 py-1.5 rounded-full hover:bg-peach-100 text-xs font-medium flex items-center gap-1.5"
                 title="Spravovať tagy"
               >
                 <svg
@@ -958,8 +958,8 @@ export function DogForm({
                 onClick={() => handleCharacterTagToggle(tag)}
                 className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
                   toTags(form.character_tags).includes(tag)
-                    ? 'bg-violet-200 text-violet-800 border-violet-300 shadow-sm'
-                    : 'border-violet-200 text-violet-600 hover:border-violet-300 hover:bg-violet-100/80 bg-white/60'
+                    ? 'bg-peach-200 text-sand-800 border-peach-300 shadow-sm'
+                    : 'border-peach-200 text-peach-600 hover:border-peach-300 hover:bg-peach-100/80 bg-white/60'
                 }`}
               >
                 {tag}
@@ -970,12 +970,12 @@ export function DogForm({
               .map((tag) => (
                 <span
                   key={tag}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-peach-100 text-sand-700 text-sm font-medium"
                 >
                   {tag}
                   <button
                     type="button"
-                    className="text-violet-500 hover:text-violet-700 rounded-full hover:bg-violet-200 p-0.5"
+                    className="text-peach-500 hover:text-sand-700 rounded-full hover:bg-peach-200 p-0.5"
                     onClick={() => handleCharacterTagToggle(tag)}
                   >
                     ×
@@ -983,18 +983,18 @@ export function DogForm({
                 </span>
               ))}
             {availableCharacterTags.length === 0 && toTags(form.character_tags).length === 0 && (
-              <p className="text-sm text-violet-400 italic">Žiadne povahové tagy k dispozícii</p>
+              <p className="text-sm text-sand-400 italic">Žiadne povahové tagy k dispozícii</p>
             )}
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-violet-700">Povahové poznámky</label>
-          <div className="border border-violet-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-            <div className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-violet-100">
+          <label className="text-sm font-medium text-sand-700">Povahové poznámky</label>
+          <div className="border border-peach-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+            <div className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-peach-50 to-sand-50 border-b border-peach-100">
               <button
                 type="button"
-                className="p-2 hover:bg-white rounded-xl text-violet-600 hover:text-violet-700 transition-colors"
+                className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-sand-700 transition-colors"
                 title="Tučné"
                 onClick={(e) => {
                   e.preventDefault();
@@ -1018,7 +1018,7 @@ export function DogForm({
               </button>
               <button
                 type="button"
-                className="p-2 hover:bg-white rounded-xl text-violet-600 hover:text-violet-700 transition-colors"
+                className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-sand-700 transition-colors"
                 title="Kurzíva"
                 onClick={(e) => {
                   e.preventDefault();
@@ -1039,10 +1039,10 @@ export function DogForm({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10 4h4M6 20h8M8 4v16M14 4v16" />
                 </svg>
               </button>
-              <div className="w-px h-5 bg-violet-200 mx-1" />
+              <div className="w-px h-5 bg-peach-200 mx-1" />
               <button
                 type="button"
-                className="p-2 hover:bg-white rounded-xl text-violet-600 hover:text-violet-700 transition-colors"
+                className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-sand-700 transition-colors"
                 title="Zoznam s odrážkami"
                 onClick={(e) => {
                   e.preventDefault();
@@ -1071,7 +1071,7 @@ export function DogForm({
               ref={characterNotesRef}
               contentEditable
               suppressContentEditableWarning
-              className="w-full px-4 py-3 min-h-[100px] bg-white focus:outline-none prose prose-sm max-w-none text-violet-800"
+              className="w-full px-4 py-3 min-h-[100px] bg-white focus:outline-none prose prose-sm max-w-none text-sand-800"
               onInput={handleCharacterNotesInput}
               placeholder="Správanie, temperament, zvláštnosti..."
               style={{
@@ -1086,10 +1086,10 @@ export function DogForm({
       {/* Kozmetika Section - Visually Separated */}
       <div className="relative mt-8">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t-2 border-dashed border-rose-200"></div>
+          <div className="w-full border-t-2 border-dashed border-sand-300"></div>
         </div>
         <div className="relative flex justify-center">
-          <span className="bg-white px-4 py-1 text-sm font-semibold text-rose-600 uppercase tracking-wider flex items-center gap-2">
+          <span className="bg-white px-4 py-1 text-sm font-semibold text-peach-600 uppercase tracking-wider flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2v20M2 12h20M12 2a10 10 0 0 1 10 10M12 2a10 10 0 0 0-10 10M12 22a10 10 0 0 1-10-10M12 22a10 10 0 0 0 10-10"/>
               <circle cx="12" cy="12" r="2"/>
@@ -1099,15 +1099,15 @@ export function DogForm({
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-rose-50/80 to-pink-50/60 rounded-3xl p-6 border border-rose-100 space-y-5">
+      <div className="bg-gradient-to-br from-sand-100/80 to-sand-50 rounded-3xl p-6 border border-sand-200 space-y-5">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-rose-700">Použité kozmetické produkty</label>
+            <label className="text-sm font-medium text-peach-700">Použité kozmetické produkty</label>
             {onOpenTagsAdmin && (
               <button
                 type="button"
                 onClick={onOpenTagsAdmin}
-                className="text-rose-500 hover:text-rose-600 transition-colors px-3 py-1.5 rounded-full hover:bg-rose-100 text-xs font-medium flex items-center gap-1.5"
+                className="text-peach-500 hover:text-peach-600 transition-colors px-3 py-1.5 rounded-full hover:bg-peach-100 text-xs font-medium flex items-center gap-1.5"
                 title="Spravovať produkty"
               >
                 <svg
@@ -1143,8 +1143,8 @@ export function DogForm({
                   onClick={() => handleCosmeticToggle(product)}
                   className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
                     isSelected
-                      ? 'bg-rose-200 text-rose-800 border-rose-300 shadow-sm'
-                      : 'border-rose-200 text-rose-600 hover:border-rose-300 hover:bg-rose-100/80 bg-white/60'
+                      ? 'bg-peach-200 text-sand-800 border-peach-300 shadow-sm'
+                      : 'border-sand-300 text-peach-600 hover:border-peach-300 hover:bg-peach-100/80 bg-white/60'
                   }`}
                 >
                   {product}
@@ -1156,12 +1156,12 @@ export function DogForm({
               .map((cosmetic) => (
                 <span
                   key={cosmetic.product}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-100 text-rose-700 text-sm font-medium"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-peach-100 text-peach-700 text-sm font-medium"
                 >
                   {cosmetic.product}
                   <button
                     type="button"
-                    className="text-rose-500 hover:text-rose-700 rounded-full hover:bg-rose-200 p-0.5"
+                    className="text-peach-500 hover:text-peach-700 rounded-full hover:bg-peach-200 p-0.5"
                     onClick={() => handleCosmeticToggle(cosmetic.product)}
                   >
                     ×
@@ -1169,7 +1169,7 @@ export function DogForm({
                 </span>
               ))}
             {availableCosmetics.length === 0 && (form.cosmetics_used || []).length === 0 && (
-              <p className="text-sm text-rose-400 italic">Žiadne kozmetické produkty k dispozícii</p>
+              <p className="text-sm text-sand-400 italic">Žiadne kozmetické produkty k dispozícii</p>
             )}
           </div>
         </div>
@@ -1177,18 +1177,18 @@ export function DogForm({
         {/* Notes for each selected cosmetic */}
         {(form.cosmetics_used || []).length > 0 && (
           <div className="space-y-4">
-            <label className="text-sm font-medium text-rose-700">Poznámky k použitiu</label>
+            <label className="text-sm font-medium text-peach-700">Poznámky k použitiu</label>
             {(form.cosmetics_used || []).map((cosmetic) => (
-              <div key={cosmetic.product} className="bg-white/60 rounded-2xl p-4 border border-rose-100">
+              <div key={cosmetic.product} className="bg-white/60 rounded-2xl p-4 border border-sand-200">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-rose-700">{cosmetic.product}</span>
+                  <span className="text-sm font-medium text-peach-700">{cosmetic.product}</span>
                 </div>
                 <input
                   type="text"
                   value={cosmetic.notes || ''}
                   onChange={(e) => handleCosmeticNotesChange(cosmetic.product, e.target.value)}
                   placeholder="Ako bol produkt použitý, riedenie, množstvo..."
-                  className="w-full rounded-xl border border-rose-200 bg-white px-4 py-2.5 text-sm text-rose-800 placeholder-rose-300 focus:bg-white focus:border-rose-400 focus:outline-none transition-all"
+                  className="w-full rounded-xl border border-sand-300 bg-white px-4 py-2.5 text-sm text-sand-800 placeholder-sand-400 focus:bg-white focus:border-peach-400 focus:outline-none transition-all"
                 />
               </div>
             ))}

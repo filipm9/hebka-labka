@@ -757,11 +757,11 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
     return (
       <div className="card space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-light text-beige-800">Konfigurácia hodnôt</h2>
+          <h2 className="text-2xl font-light text-sand-800">Konfigurácia hodnôt</h2>
         </div>
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-sage-500 border-t-transparent"></div>
-          <span className="ml-3 text-beige-600">Načítavam konfiguráciu...</span>
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-peach-500 border-t-transparent"></div>
+          <span className="ml-3 text-sand-600">Načítavam konfiguráciu...</span>
         </div>
       </div>
     );
@@ -770,11 +770,11 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
   return (
     <div className="card space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-light text-beige-800">Konfigurácia hodnôt</h2>
+        <h2 className="text-2xl font-light text-sand-800">Konfigurácia hodnôt</h2>
         {onClose && (
           <button
             onClick={onClose}
-            className="text-beige-600 hover:text-beige-700 text-sm px-4 py-2 rounded-full hover:bg-beige-50 transition-colors"
+            className="text-sand-600 hover:text-sand-700 text-sm px-4 py-2 rounded-full hover:bg-sand-100 transition-colors"
             disabled={isUpdating}
           >
             Zavrieť
@@ -783,7 +783,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       </div>
 
       {isUpdating && (
-        <div className="bg-sage-50 border border-sage-200 rounded-2xl p-4 text-sm text-sage-700">
+        <div className="bg-peach-50 border border-peach-200 rounded-2xl p-4 text-sm text-peach-700">
           Aktualizujem hodnoty vo všetkých psoch...
         </div>
       )}
@@ -792,21 +792,21 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       <div className="space-y-5">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-peach-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19.5 12.572l-7.5 7.428-7.5-7.428a5 5 0 1 1 7.5-6.566 5 5 0 1 1 7.5 6.566z"/>
             </svg>
-            <label className="text-sm font-medium text-emerald-700">
+            <label className="text-sm font-semibold text-sand-700">
               Zdravotné tagy
             </label>
           </div>
           <div className="flex flex-wrap gap-2">
             {customTags.length === 0 ? (
-              <p className="text-sm text-beige-400">Zatiaľ žiadne tagy.</p>
+              <p className="text-sm text-sand-400">Zatiaľ žiadne tagy.</p>
             ) : (
               customTags.map((tag) => (
                 <div
                   key={tag}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-sm font-medium border border-emerald-200"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-peach-50 text-peach-700 text-sm font-medium border border-peach-200"
                 >
                   {editingTag === tag ? (
                     <>
@@ -821,13 +821,13 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                             handleCancelEditTag();
                           }
                         }}
-                        className="px-3 py-1 rounded-xl border border-emerald-300 bg-white text-sm w-28 text-beige-800 focus:outline-none focus:border-emerald-400"
+                        className="px-3 py-1 rounded-xl border border-peach-300 bg-white text-sm w-28 text-sand-800 focus:outline-none focus:border-peach-400"
                         autoFocus
                       />
                       <button
                         type="button"
                         onClick={handleSaveEditTag}
-                        className="text-emerald-600 hover:text-emerald-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-emerald-50 transition-colors"
+                        className="text-peach-600 hover:text-peach-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Uložiť"
                         disabled={isUpdating}
                       >
@@ -836,7 +836,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={handleCancelEditTag}
-                        className="text-beige-500 hover:text-beige-700 disabled:opacity-50 p-1 rounded-full hover:bg-beige-50 transition-colors"
+                        className="text-sand-500 hover:text-sand-700 disabled:opacity-50 p-1 rounded-full hover:bg-sand-100 transition-colors"
                         title="Zrušiť"
                         disabled={isUpdating}
                       >
@@ -849,7 +849,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={() => handleStartEditTag(tag)}
-                        className="text-blush-500 hover:text-blush-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
+                        className="text-peach-500 hover:text-peach-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Upraviť"
                         disabled={isUpdating}
                       >
@@ -858,7 +858,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={() => handleDeleteTag(tag)}
-                        className="text-blush-400 hover:text-blush-500 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
+                        className="text-peach-400 hover:text-peach-500 disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Vymazať"
                         disabled={isUpdating}
                       >
@@ -873,7 +873,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
         </div>
 
         <div className="space-y-3">
-          <label className="text-sm font-medium text-emerald-700">
+          <label className="text-sm font-medium text-sand-600">
             Pridať nový zdravotný tag
           </label>
           <div className="flex gap-3">
@@ -888,12 +888,12 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                 }
               }}
               placeholder="Názov tagu (napr. Alergia, Lieky...)"
-              className="flex-1 rounded-2xl border border-emerald-200 bg-white/80 px-4 py-3 text-beige-800 placeholder-emerald-300 focus:bg-white focus:border-emerald-400 transition-all"
+              className="flex-1 rounded-2xl border border-sand-300 bg-white/80 px-4 py-3 text-sand-800 placeholder-sand-400 focus:bg-white focus:border-peach-400 transition-all"
             />
             <button
               type="button"
               onClick={handleAddTag}
-              className="px-6 rounded-2xl bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
+              className="px-6 rounded-2xl bg-peach-500 text-white text-sm font-medium hover:bg-peach-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
               disabled={isUpdating}
             >
               Pridať
@@ -903,27 +903,27 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       </div>
 
       {/* Character Tags Section */}
-      <div className="space-y-5 pt-6 border-t border-beige-200">
+      <div className="space-y-5 pt-6 border-t border-sand-200">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-peach-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/>
               <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
               <line x1="9" y1="9" x2="9.01" y2="9"/>
               <line x1="15" y1="9" x2="15.01" y2="9"/>
             </svg>
-            <label className="text-sm font-medium text-violet-700">
+            <label className="text-sm font-semibold text-sand-700">
               Povahové tagy
             </label>
           </div>
           <div className="flex flex-wrap gap-2">
             {customCharacterTags.length === 0 ? (
-              <p className="text-sm text-beige-400">Zatiaľ žiadne povahové tagy.</p>
+              <p className="text-sm text-sand-400">Zatiaľ žiadne povahové tagy.</p>
             ) : (
               customCharacterTags.map((tag) => (
                 <div
                   key={tag}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-violet-100 text-violet-700 text-sm font-medium border border-violet-200"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-peach-100 text-peach-800 text-sm font-medium border border-peach-200"
                 >
                   {editingCharacterTag === tag ? (
                     <>
@@ -938,13 +938,13 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                             handleCancelEditCharacterTag();
                           }
                         }}
-                        className="px-3 py-1 rounded-xl border border-violet-300 bg-white text-sm w-28 text-beige-800 focus:outline-none focus:border-violet-400"
+                        className="px-3 py-1 rounded-xl border border-peach-300 bg-white text-sm w-28 text-sand-800 focus:outline-none focus:border-peach-400"
                         autoFocus
                       />
                       <button
                         type="button"
                         onClick={handleSaveEditCharacterTag}
-                        className="text-violet-600 hover:text-violet-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-violet-50 transition-colors"
+                        className="text-peach-600 hover:text-peach-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Uložiť"
                         disabled={isUpdating}
                       >
@@ -953,7 +953,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={handleCancelEditCharacterTag}
-                        className="text-beige-500 hover:text-beige-700 disabled:opacity-50 p-1 rounded-full hover:bg-beige-50 transition-colors"
+                        className="text-sand-500 hover:text-sand-700 disabled:opacity-50 p-1 rounded-full hover:bg-sand-100 transition-colors"
                         title="Zrušiť"
                         disabled={isUpdating}
                       >
@@ -966,7 +966,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={() => handleStartEditCharacterTag(tag)}
-                        className="text-blush-500 hover:text-blush-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
+                        className="text-peach-500 hover:text-peach-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Upraviť"
                         disabled={isUpdating}
                       >
@@ -975,7 +975,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={() => handleDeleteCharacterTag(tag)}
-                        className="text-blush-400 hover:text-blush-500 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
+                        className="text-peach-400 hover:text-peach-500 disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Vymazať"
                         disabled={isUpdating}
                       >
@@ -990,7 +990,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
         </div>
 
         <div className="space-y-3">
-          <label className="text-sm font-medium text-violet-700">
+          <label className="text-sm font-medium text-sand-600">
             Pridať nový povahový tag
           </label>
           <div className="flex gap-3">
@@ -1005,12 +1005,12 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                 }
               }}
               placeholder="Názov tagu (napr. Hravý, Kľudný...)"
-              className="flex-1 rounded-2xl border border-violet-200 bg-white/80 px-4 py-3 text-beige-800 placeholder-violet-300 focus:bg-white focus:border-violet-400 transition-all"
+              className="flex-1 rounded-2xl border border-sand-300 bg-white/80 px-4 py-3 text-sand-800 placeholder-sand-400 focus:bg-white focus:border-peach-400 transition-all"
             />
             <button
               type="button"
               onClick={handleAddCharacterTag}
-              className="px-6 rounded-2xl bg-violet-500 text-white text-sm font-medium hover:bg-violet-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
+              className="px-6 rounded-2xl bg-peach-500 text-white text-sm font-medium hover:bg-peach-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
               disabled={isUpdating}
             >
               Pridať
@@ -1020,24 +1020,24 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       </div>
 
       {/* Communication Methods Section */}
-      <div className="space-y-5 pt-6 border-t border-beige-200">
+      <div className="space-y-5 pt-6 border-t border-sand-200">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-peach-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
             </svg>
-            <label className="text-sm font-medium text-blue-700">
+            <label className="text-sm font-semibold text-sand-700">
               Spôsoby komunikácie
             </label>
           </div>
           <div className="flex flex-wrap gap-2">
             {customCommunicationMethods.length === 0 ? (
-              <p className="text-sm text-beige-400">Zatiaľ žiadne spôsoby komunikácie.</p>
+              <p className="text-sm text-sand-400">Zatiaľ žiadne spôsoby komunikácie.</p>
             ) : (
               customCommunicationMethods.map((method) => (
                 <div
                   key={method}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-medium border border-blue-200"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-sand-100 text-sand-700 text-sm font-medium border border-sand-300"
                 >
                   {editingCommunicationMethod === method ? (
                     <>
@@ -1052,13 +1052,13 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                             handleCancelEditCommunicationMethod();
                           }
                         }}
-                        className="px-3 py-1 rounded-xl border border-blue-300 bg-white text-sm w-28 text-beige-800 focus:outline-none focus:border-blue-400"
+                        className="px-3 py-1 rounded-xl border border-sand-300 bg-white text-sm w-28 text-sand-800 focus:outline-none focus:border-peach-400"
                         autoFocus
                       />
                       <button
                         type="button"
                         onClick={handleSaveEditCommunicationMethod}
-                        className="text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-blue-50 transition-colors"
+                        className="text-peach-600 hover:text-peach-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Uložiť"
                         disabled={isUpdating}
                       >
@@ -1067,7 +1067,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={handleCancelEditCommunicationMethod}
-                        className="text-beige-500 hover:text-beige-700 disabled:opacity-50 p-1 rounded-full hover:bg-beige-50 transition-colors"
+                        className="text-sand-500 hover:text-sand-700 disabled:opacity-50 p-1 rounded-full hover:bg-sand-100 transition-colors"
                         title="Zrušiť"
                         disabled={isUpdating}
                       >
@@ -1080,7 +1080,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={() => handleStartEditCommunicationMethod(method)}
-                        className="text-blush-500 hover:text-blush-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
+                        className="text-peach-500 hover:text-peach-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Upraviť"
                         disabled={isUpdating}
                       >
@@ -1089,7 +1089,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={() => handleDeleteCommunicationMethod(method)}
-                        className="text-blush-400 hover:text-blush-500 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
+                        className="text-peach-400 hover:text-peach-500 disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Vymazať"
                         disabled={isUpdating}
                       >
@@ -1104,7 +1104,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
         </div>
 
         <div className="space-y-3">
-          <label className="text-sm font-medium text-blue-700">
+          <label className="text-sm font-medium text-sand-600">
             Pridať nový spôsob komunikácie
           </label>
           <div className="flex gap-3">
@@ -1119,12 +1119,12 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                 }
               }}
               placeholder="Názov (napr. WhatsApp, Instagram, Phone...)"
-              className="flex-1 rounded-2xl border border-blue-200 bg-white/80 px-4 py-3 text-beige-800 placeholder-blue-300 focus:bg-white focus:border-blue-400 transition-all"
+              className="flex-1 rounded-2xl border border-sand-300 bg-white/80 px-4 py-3 text-sand-800 placeholder-sand-400 focus:bg-white focus:border-peach-400 transition-all"
             />
             <button
               type="button"
               onClick={handleAddCommunicationMethod}
-              className="px-6 rounded-2xl bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
+              className="px-6 rounded-2xl bg-peach-500 text-white text-sm font-medium hover:bg-peach-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
               disabled={isUpdating}
             >
               Pridať
@@ -1134,26 +1134,26 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       </div>
 
       {/* Breeds Section */}
-      <div className="space-y-5 pt-6 border-t border-beige-200">
+      <div className="space-y-5 pt-6 border-t border-sand-200">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-peach-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2L2 7l10 5 10-5-10-5z"/>
               <path d="M2 17l10 5 10-5"/>
               <path d="M2 12l10 5 10-5"/>
             </svg>
-            <label className="text-sm font-medium text-amber-700">
+            <label className="text-sm font-semibold text-sand-700">
               Plemená
             </label>
           </div>
           <div className="flex flex-wrap gap-2">
             {customBreeds.length === 0 ? (
-              <p className="text-sm text-beige-400">Zatiaľ žiadne plemená.</p>
+              <p className="text-sm text-sand-400">Zatiaľ žiadne plemená.</p>
             ) : (
               customBreeds.map((breed) => (
                 <div
                   key={breed}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-amber-100 text-amber-700 text-sm font-medium border border-amber-200"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-peach-50 text-peach-700 text-sm font-medium border border-peach-200"
                 >
                   {editingBreed === breed ? (
                     <>
@@ -1168,13 +1168,13 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                             handleCancelEditBreed();
                           }
                         }}
-                        className="px-3 py-1 rounded-xl border border-amber-300 bg-white text-sm w-36 text-beige-800 focus:outline-none focus:border-amber-400"
+                        className="px-3 py-1 rounded-xl border border-peach-300 bg-white text-sm w-36 text-sand-800 focus:outline-none focus:border-peach-400"
                         autoFocus
                       />
                       <button
                         type="button"
                         onClick={handleSaveEditBreed}
-                        className="text-amber-600 hover:text-amber-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-amber-50 transition-colors"
+                        className="text-peach-600 hover:text-peach-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Uložiť"
                         disabled={isUpdating}
                       >
@@ -1183,7 +1183,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={handleCancelEditBreed}
-                        className="text-beige-500 hover:text-beige-700 disabled:opacity-50 p-1 rounded-full hover:bg-beige-50 transition-colors"
+                        className="text-sand-500 hover:text-sand-700 disabled:opacity-50 p-1 rounded-full hover:bg-sand-100 transition-colors"
                         title="Zrušiť"
                         disabled={isUpdating}
                       >
@@ -1196,7 +1196,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={() => handleStartEditBreed(breed)}
-                        className="text-amber-500 hover:text-amber-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-amber-50 transition-colors"
+                        className="text-peach-500 hover:text-peach-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Upraviť"
                         disabled={isUpdating}
                       >
@@ -1205,7 +1205,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={() => handleDeleteBreed(breed)}
-                        className="text-amber-400 hover:text-amber-500 disabled:opacity-50 p-1 rounded-full hover:bg-amber-50 transition-colors"
+                        className="text-peach-400 hover:text-peach-500 disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Vymazať"
                         disabled={isUpdating}
                       >
@@ -1220,7 +1220,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
         </div>
 
         <div className="space-y-3">
-          <label className="text-sm font-medium text-amber-700">
+          <label className="text-sm font-medium text-sand-600">
             Pridať nové plemeno
           </label>
           <div className="flex gap-3">
@@ -1235,12 +1235,12 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                 }
               }}
               placeholder="Názov plemena"
-              className="flex-1 rounded-2xl border border-amber-200 bg-white/80 px-4 py-3 text-beige-800 placeholder-amber-300 focus:bg-white focus:border-amber-400 transition-all"
+              className="flex-1 rounded-2xl border border-sand-300 bg-white/80 px-4 py-3 text-sand-800 placeholder-sand-400 focus:bg-white focus:border-peach-400 transition-all"
             />
             <button
               type="button"
               onClick={handleAddBreed}
-              className="px-6 rounded-2xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
+              className="px-6 rounded-2xl bg-peach-500 text-white text-sm font-medium hover:bg-peach-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
               disabled={isUpdating}
             >
               Pridať
@@ -1250,25 +1250,25 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
       </div>
 
       {/* Cosmetics Section */}
-      <div className="space-y-5 pt-6 border-t border-beige-200">
+      <div className="space-y-5 pt-6 border-t border-sand-200">
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-peach-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2v20M2 12h20M12 2a10 10 0 0 1 10 10M12 2a10 10 0 0 0-10 10M12 22a10 10 0 0 1-10-10M12 22a10 10 0 0 0 10-10"/>
               <circle cx="12" cy="12" r="2"/>
             </svg>
-            <label className="text-sm font-medium text-rose-700">
+            <label className="text-sm font-semibold text-sand-700">
               Kozmetické produkty
             </label>
           </div>
           <div className="flex flex-wrap gap-2">
             {customCosmetics.length === 0 ? (
-              <p className="text-sm text-beige-400">Zatiaľ žiadne kozmetické produkty.</p>
+              <p className="text-sm text-sand-400">Zatiaľ žiadne kozmetické produkty.</p>
             ) : (
               customCosmetics.map((cosmetic) => (
                 <div
                   key={cosmetic}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-rose-100 text-rose-700 text-sm font-medium border border-rose-200"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-peach-100 text-peach-800 text-sm font-medium border border-peach-200"
                 >
                   {editingCosmetic === cosmetic ? (
                     <>
@@ -1283,13 +1283,13 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                             handleCancelEditCosmetic();
                           }
                         }}
-                        className="px-3 py-1 rounded-xl border border-rose-300 bg-white text-sm w-40 text-beige-800 focus:outline-none focus:border-rose-400"
+                        className="px-3 py-1 rounded-xl border border-peach-300 bg-white text-sm w-40 text-sand-800 focus:outline-none focus:border-peach-400"
                         autoFocus
                       />
                       <button
                         type="button"
                         onClick={handleSaveEditCosmetic}
-                        className="text-rose-600 hover:text-rose-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-rose-50 transition-colors"
+                        className="text-peach-600 hover:text-peach-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Uložiť"
                         disabled={isUpdating}
                       >
@@ -1298,7 +1298,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={handleCancelEditCosmetic}
-                        className="text-beige-500 hover:text-beige-700 disabled:opacity-50 p-1 rounded-full hover:bg-beige-50 transition-colors"
+                        className="text-sand-500 hover:text-sand-700 disabled:opacity-50 p-1 rounded-full hover:bg-sand-100 transition-colors"
                         title="Zrušiť"
                         disabled={isUpdating}
                       >
@@ -1311,7 +1311,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={() => handleViewCosmeticNotes(cosmetic)}
-                        className="text-rose-500 hover:text-rose-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-rose-50 transition-colors"
+                        className="text-peach-500 hover:text-peach-600 ml-1 disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Zobraziť poznámky"
                         disabled={isUpdating || loadingNotes}
                       >
@@ -1326,7 +1326,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={() => handleStartEditCosmetic(cosmetic)}
-                        className="text-blush-500 hover:text-blush-600 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
+                        className="text-peach-500 hover:text-peach-600 disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Upraviť"
                         disabled={isUpdating}
                       >
@@ -1335,7 +1335,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                       <button
                         type="button"
                         onClick={() => handleDeleteCosmetic(cosmetic)}
-                        className="text-blush-400 hover:text-blush-500 disabled:opacity-50 p-1 rounded-full hover:bg-blush-50 transition-colors"
+                        className="text-peach-400 hover:text-peach-500 disabled:opacity-50 p-1 rounded-full hover:bg-peach-100 transition-colors"
                         title="Vymazať"
                         disabled={isUpdating}
                       >
@@ -1350,7 +1350,7 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
         </div>
 
         <div className="space-y-3">
-          <label className="text-sm font-medium text-rose-700">
+          <label className="text-sm font-medium text-sand-600">
             Pridať nový kozmetický produkt
           </label>
           <div className="flex gap-3">
@@ -1365,12 +1365,12 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                 }
               }}
               placeholder="Názov produktu (napr. Šampón, Kondicionér...)"
-              className="flex-1 rounded-2xl border border-rose-200 bg-white/80 px-4 py-3 text-beige-800 placeholder-rose-300 focus:bg-white focus:border-rose-400 transition-all"
+              className="flex-1 rounded-2xl border border-sand-300 bg-white/80 px-4 py-3 text-sand-800 placeholder-sand-400 focus:bg-white focus:border-peach-400 transition-all"
             />
             <button
               type="button"
               onClick={handleAddCosmetic}
-              className="px-6 rounded-2xl bg-rose-500 text-white text-sm font-medium hover:bg-rose-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
+              className="px-6 rounded-2xl bg-peach-500 text-white text-sm font-medium hover:bg-peach-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
               disabled={isUpdating}
             >
               Pridať
@@ -1390,12 +1390,12 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
 
       {/* Cosmetic Notes Modal */}
       {cosmeticNotesModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-sand-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col">
-            <div className="px-6 py-5 border-b border-beige-100 flex items-center justify-between">
+            <div className="px-6 py-5 border-b border-sand-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <div className="w-10 h-10 rounded-full bg-peach-100 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-peach-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
                     <line x1="16" y1="13" x2="8" y2="13"/>
@@ -1403,13 +1403,13 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-beige-800">Poznámky k produktu</h3>
-                  <p className="text-sm text-rose-600 font-medium">{cosmeticNotesModal.cosmetic}</p>
+                  <h3 className="text-lg font-semibold text-sand-800">Poznámky k produktu</h3>
+                  <p className="text-sm text-peach-600 font-medium">{cosmeticNotesModal.cosmetic}</p>
                 </div>
               </div>
               <button
                 onClick={handleCloseCosmeticNotesModal}
-                className="text-beige-400 hover:text-beige-600 p-2 rounded-full hover:bg-beige-50 transition-colors"
+                className="text-sand-400 hover:text-sand-600 p-2 rounded-full hover:bg-sand-100 transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"/>
@@ -1421,30 +1421,30 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
             <div className="flex-1 overflow-y-auto p-6">
               {cosmeticNotesModal.notes.length === 0 ? (
                 <div className="text-center py-12">
-                  <div className="w-16 h-16 rounded-full bg-beige-100 flex items-center justify-center mx-auto mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-beige-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <div className="w-16 h-16 rounded-full bg-sand-100 flex items-center justify-center mx-auto mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-sand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                       <polyline points="14 2 14 8 20 8"/>
                     </svg>
                   </div>
-                  <p className="text-beige-500 text-sm">Zatiaľ žiadne poznámky k tomuto produktu.</p>
-                  <p className="text-beige-400 text-xs mt-1">Poznámky sa zobrazia keď pridáte komentár k produktu pri niektorom psovi.</p>
+                  <p className="text-sand-500 text-sm">Zatiaľ žiadne poznámky k tomuto produktu.</p>
+                  <p className="text-sand-400 text-xs mt-1">Poznámky sa zobrazia keď pridáte komentár k produktu pri niektorom psovi.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {cosmeticNotesModal.notes.map((item, idx) => (
-                    <div key={idx} className="bg-gradient-to-br from-rose-50 to-beige-50 rounded-2xl p-4 border border-rose-100">
+                    <div key={idx} className="bg-gradient-to-br from-peach-50 to-sand-50 rounded-2xl p-4 border border-peach-100">
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-8 h-8 rounded-full bg-rose-200 flex items-center justify-center text-rose-700 text-sm font-bold">
+                        <div className="w-8 h-8 rounded-full bg-peach-200 flex items-center justify-center text-peach-700 text-sm font-bold">
                           {item.dogName.charAt(0).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-beige-800">{item.dogName}</p>
-                          <p className="text-xs text-beige-500">{item.ownerName}</p>
+                          <p className="text-sm font-semibold text-sand-800">{item.dogName}</p>
+                          <p className="text-xs text-sand-500">{item.ownerName}</p>
                         </div>
                       </div>
                       <div 
-                        className="text-sm text-beige-700 bg-white/70 rounded-xl p-3 border border-rose-100"
+                        className="text-sm text-sand-700 bg-white/70 rounded-xl p-3 border border-peach-100"
                         dangerouslySetInnerHTML={{ __html: item.notes }}
                       />
                     </div>
@@ -1453,14 +1453,14 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
               )}
             </div>
             
-            <div className="px-6 py-4 border-t border-beige-100 bg-beige-50/50 rounded-b-3xl">
+            <div className="px-6 py-4 border-t border-sand-100 bg-sand-50/50 rounded-b-3xl">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-beige-500">
+                <p className="text-xs text-sand-500">
                   {cosmeticNotesModal.notes.length} {cosmeticNotesModal.notes.length === 1 ? 'poznámka' : cosmeticNotesModal.notes.length >= 2 && cosmeticNotesModal.notes.length <= 4 ? 'poznámky' : 'poznámok'}
                 </p>
                 <button
                   onClick={handleCloseCosmeticNotesModal}
-                  className="px-5 py-2 rounded-xl bg-rose-500 text-white text-sm font-medium hover:bg-rose-600 transition-colors"
+                  className="px-5 py-2 rounded-xl bg-peach-500 text-white text-sm font-medium hover:bg-peach-600 transition-colors"
                 >
                   Zavrieť
                 </button>
@@ -1472,10 +1472,10 @@ export function TagsAdmin({ onClose, onTagUpdate, onToast }) {
 
       {/* Loading overlay for notes */}
       {loadingNotes && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-sand-900/30 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl px-6 py-4 shadow-lg flex items-center gap-3">
-            <div className="animate-spin rounded-full h-5 w-5 border-2 border-rose-500 border-t-transparent"></div>
-            <span className="text-sm text-beige-700">Načítavam poznámky...</span>
+            <div className="animate-spin rounded-full h-5 w-5 border-2 border-peach-500 border-t-transparent"></div>
+            <span className="text-sm text-sand-700">Načítavam poznámky...</span>
           </div>
         </div>
       )}

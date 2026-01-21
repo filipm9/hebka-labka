@@ -58,7 +58,7 @@ export function DogCard({ dog, onEdit, onDelete, onOpen, onTagClick, onCharacter
             {tags.map((tag) => (
               <button
                 key={`health-${tag}`}
-                className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium hover:bg-emerald-200 transition-colors"
+                className="px-2.5 py-0.5 rounded-full bg-peach-100 text-peach-700 text-xs font-medium hover:bg-peach-200 transition-colors"
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -71,7 +71,7 @@ export function DogCard({ dog, onEdit, onDelete, onOpen, onTagClick, onCharacter
             {characterTags.map((tag) => (
               <button
                 key={`char-${tag}`}
-                className="px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-700 text-xs font-medium hover:bg-violet-200 transition-colors"
+                className="px-2.5 py-0.5 rounded-full bg-peach-200 text-peach-800 text-xs font-medium hover:bg-peach-300 transition-colors"
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -87,7 +87,7 @@ export function DogCard({ dog, onEdit, onDelete, onOpen, onTagClick, onCharacter
         {/* Indicator if there are notes */}
         {hasBehaviorNotes && (
           <div className="flex items-center gap-1.5 pt-1">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 border border-amber-200 text-amber-700 text-xs font-medium">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-peach-100 border border-peach-200 text-peach-700 text-xs font-medium">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>

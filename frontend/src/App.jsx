@@ -408,17 +408,17 @@ export default function App() {
           </div>
           {showAdvancedSearch && (
             <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
-              <div className="card py-4 border-l-4 border-l-emerald-300">
+              <div className="card py-4 border-l-4 border-l-peach-300">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-peach-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M19.5 12.572l-7.5 7.428-7.5-7.428a5 5 0 1 1 7.5-6.566 5 5 0 1 1 7.5 6.566z"/>
                     </svg>
-                    <p className="text-sm font-medium text-emerald-700">Filtrovať podľa zdravotných tagov</p>
+                    <p className="text-sm font-medium text-sand-700">Filtrovať podľa zdravotných tagov</p>
                   </div>
                   <button
                     type="button"
-                    className="text-xs text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-full hover:bg-emerald-50 transition-colors disabled:opacity-60"
+                    className="text-xs text-peach-600 hover:text-peach-700 px-3 py-1.5 rounded-full hover:bg-peach-50 transition-colors disabled:opacity-60"
                     onClick={() => setDogTagFilter([])}
                     disabled={dogTagFilter.length === 0}
                   >
@@ -441,8 +441,8 @@ export default function App() {
                         }}
                         className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
                           selected
-                            ? 'bg-emerald-200 text-emerald-700 border-emerald-300 shadow-sm'
-                            : 'border-emerald-200 text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50'
+                            ? 'bg-peach-200 text-peach-700 border-peach-300 shadow-sm'
+                            : 'border-peach-200 text-peach-600 hover:border-peach-300 hover:bg-peach-50'
                         }`}
                       >
                         {tag}
@@ -450,24 +450,24 @@ export default function App() {
                     );
                   })}
                   {availableTags.length === 0 && (
-                    <p className="text-sm text-emerald-400/80">Zatiaľ žiadne zdravotné tagy.</p>
+                    <p className="text-sm text-sand-400">Zatiaľ žiadne zdravotné tagy.</p>
                   )}
                 </div>
               </div>
-              <div className="card py-4 border-l-4 border-l-violet-300">
+              <div className="card py-4 border-l-4 border-l-peach-400">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-peach-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10"/>
                       <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
                       <line x1="9" y1="9" x2="9.01" y2="9"/>
                       <line x1="15" y1="9" x2="15.01" y2="9"/>
                     </svg>
-                    <p className="text-sm font-medium text-violet-700">Filtrovať podľa povahových tagov</p>
+                    <p className="text-sm font-medium text-sand-700">Filtrovať podľa povahových tagov</p>
                   </div>
                   <button
                     type="button"
-                    className="text-xs text-violet-600 hover:text-violet-700 px-3 py-1.5 rounded-full hover:bg-violet-50 transition-colors disabled:opacity-60"
+                    className="text-xs text-peach-600 hover:text-peach-700 px-3 py-1.5 rounded-full hover:bg-peach-50 transition-colors disabled:opacity-60"
                     onClick={() => setDogCharacterTagFilter([])}
                     disabled={dogCharacterTagFilter.length === 0}
                   >
@@ -490,8 +490,8 @@ export default function App() {
                         }}
                         className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
                           selected
-                            ? 'bg-violet-200 text-violet-700 border-violet-300 shadow-sm'
-                            : 'border-violet-200 text-violet-600 hover:border-violet-300 hover:bg-violet-50'
+                            ? 'bg-peach-300 text-peach-800 border-peach-400 shadow-sm'
+                            : 'border-peach-200 text-peach-600 hover:border-peach-300 hover:bg-peach-50'
                         }`}
                       >
                         {tag}
@@ -499,7 +499,7 @@ export default function App() {
                     );
                   })}
                   {availableCharacterTags.length === 0 && (
-                    <p className="text-sm text-violet-400/80">Zatiaľ žiadne povahové tagy.</p>
+                    <p className="text-sm text-sand-400">Zatiaľ žiadne povahové tagy.</p>
                   )}
                 </div>
               </div>
@@ -585,10 +585,10 @@ export default function App() {
                       <p className="text-sm text-beige-400 italic">Bez majiteľa</p>
                     )}
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-beige-700">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-sand-700">
                     {selectedDog.breed && (
-                      <div className="bg-gradient-to-br from-amber-50/80 to-orange-50/60 rounded-2xl px-4 py-3 border border-amber-100">
-                        <div className="flex items-center gap-2 text-amber-600 mb-1">
+                      <div className="bg-gradient-to-br from-peach-50 to-sand-50 rounded-2xl px-4 py-3 border border-peach-100">
+                        <div className="flex items-center gap-2 text-peach-600 mb-1">
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M12 2L2 7l10 5 10-5-10-5z"/>
                             <path d="M2 17l10 5 10-5"/>
@@ -596,24 +596,24 @@ export default function App() {
                           </svg>
                           <span className="text-xs font-semibold uppercase tracking-wider">Plemeno</span>
                         </div>
-                        <p className="text-amber-800 font-medium">{selectedDog.breed}</p>
+                        <p className="text-peach-800 font-medium">{selectedDog.breed}</p>
                       </div>
                     )}
                     {(selectedDog.weight || selectedDog.grooming_time_minutes) && (
-                      <div className="bg-sage-50/50 rounded-2xl px-4 py-2 space-y-1">
+                      <div className="bg-sand-50 rounded-2xl px-4 py-2 space-y-1">
                         {selectedDog.weight && (
-                          <p><span className="text-beige-500">Hmotnosť:</span> {selectedDog.weight} kg</p>
+                          <p><span className="text-sand-500">Hmotnosť:</span> {selectedDog.weight} kg</p>
                         )}
                         {selectedDog.grooming_time_minutes && (
-                          <p><span className="text-beige-500">Čas úpravy:</span> {selectedDog.grooming_time_minutes} min</p>
+                          <p><span className="text-sand-500">Čas úpravy:</span> {selectedDog.grooming_time_minutes} min</p>
                         )}
                       </div>
                     )}
                   </div>
                   {/* Zdravie Section */}
                   {(toTags(selectedDog.grooming_tolerance).length > 0 || selectedDog.health_notes) && (
-                    <div className="bg-gradient-to-br from-emerald-50/80 to-teal-50/60 rounded-2xl p-4 border border-emerald-100 space-y-4">
-                      <div className="flex items-center gap-2 text-emerald-600">
+                    <div className="bg-gradient-to-br from-peach-50 to-sand-50 rounded-2xl p-4 border border-peach-100 space-y-4">
+                      <div className="flex items-center gap-2 text-peach-600">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M19.5 12.572l-7.5 7.428-7.5-7.428a5 5 0 1 1 7.5-6.566 5 5 0 1 1 7.5 6.566z"/>
                         </svg>
@@ -626,7 +626,7 @@ export default function App() {
                           {toTags(selectedDog.grooming_tolerance).map((tag) => (
                             <span
                               key={tag}
-                              className="px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
+                              className="px-3 py-1.5 rounded-full bg-peach-100 text-peach-700 text-xs font-medium"
                             >
                               {tag}
                             </span>
@@ -634,7 +634,7 @@ export default function App() {
                         </div>
                       )}
                       {selectedDog.health_notes && (
-                        <div className="prose prose-sm max-w-none text-emerald-800 bg-white/60 rounded-xl p-3">
+                        <div className="prose prose-sm max-w-none text-sand-800 bg-white/60 rounded-xl p-3">
                           <div dangerouslySetInnerHTML={{ __html: selectedDog.health_notes }} />
                         </div>
                       )}
@@ -642,8 +642,8 @@ export default function App() {
                   )}
                   {/* Povaha Section */}
                   {(toTags(selectedDog.character_tags).length > 0 || selectedDog.character_notes) && (
-                    <div className="bg-gradient-to-br from-violet-50/80 to-purple-50/60 rounded-2xl p-4 border border-violet-100 space-y-4">
-                      <div className="flex items-center gap-2 text-violet-600">
+                    <div className="bg-gradient-to-br from-peach-100/60 to-sand-50 rounded-2xl p-4 border border-peach-200 space-y-4">
+                      <div className="flex items-center gap-2 text-peach-600">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <circle cx="12" cy="12" r="10"/>
                           <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
@@ -659,7 +659,7 @@ export default function App() {
                           {toTags(selectedDog.character_tags).map((tag) => (
                             <span
                               key={tag}
-                              className="px-3 py-1.5 rounded-full bg-violet-100 text-violet-700 text-xs font-medium"
+                              className="px-3 py-1.5 rounded-full bg-peach-200 text-peach-800 text-xs font-medium"
                             >
                               {tag}
                             </span>
@@ -667,7 +667,7 @@ export default function App() {
                         </div>
                       )}
                       {selectedDog.character_notes && (
-                        <div className="prose prose-sm max-w-none text-violet-800 bg-white/60 rounded-xl p-3">
+                        <div className="prose prose-sm max-w-none text-sand-800 bg-white/60 rounded-xl p-3">
                           <div dangerouslySetInnerHTML={{ __html: selectedDog.character_notes }} />
                         </div>
                       )}
@@ -675,8 +675,8 @@ export default function App() {
                   )}
                   {/* Kozmetika Section */}
                   {(selectedDog.cosmetics_used && selectedDog.cosmetics_used.length > 0) && (
-                    <div className="bg-gradient-to-br from-rose-50/80 to-pink-50/60 rounded-2xl p-4 border border-rose-100 space-y-4">
-                      <div className="flex items-center gap-2 text-rose-600">
+                    <div className="bg-gradient-to-br from-sand-100/80 to-sand-50 rounded-2xl p-4 border border-sand-200 space-y-4">
+                      <div className="flex items-center gap-2 text-peach-600">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M12 2v20M2 12h20M12 2a10 10 0 0 1 10 10M12 2a10 10 0 0 0-10 10M12 22a10 10 0 0 1-10-10M12 22a10 10 0 0 0 10-10"/>
                           <circle cx="12" cy="12" r="2"/>
@@ -689,11 +689,11 @@ export default function App() {
                         {selectedDog.cosmetics_used.map((cosmetic, index) => (
                           <div
                             key={index}
-                            className="bg-white/60 rounded-xl p-3 border border-rose-100"
+                            className="bg-white/60 rounded-xl p-3 border border-sand-200"
                           >
-                            <span className="text-sm font-medium text-rose-700">{cosmetic.product}</span>
+                            <span className="text-sm font-medium text-peach-700">{cosmetic.product}</span>
                             {cosmetic.notes && (
-                              <p className="text-sm text-rose-600 mt-1">{cosmetic.notes}</p>
+                              <p className="text-sm text-sand-600 mt-1">{cosmetic.notes}</p>
                             )}
                           </div>
                         ))}
@@ -701,8 +701,8 @@ export default function App() {
                     </div>
                   )}
                   {selectedDog.behavior_notes && (
-                    <div className="bg-gradient-to-br from-amber-50 via-yellow-50/80 to-orange-50/60 rounded-2xl p-4 border-2 border-amber-200 shadow-sm space-y-3">
-                      <div className="flex items-center gap-2 text-amber-700">
+                    <div className="bg-gradient-to-br from-peach-100 via-peach-50 to-sand-50 rounded-2xl p-4 border-2 border-peach-300 shadow-sm space-y-3">
+                      <div className="flex items-center gap-2 text-peach-700">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                           <polyline points="14 2 14 8 20 8"/>
@@ -713,7 +713,7 @@ export default function App() {
                           Dôležité info
                         </p>
                       </div>
-                      <div className="prose prose-sm max-w-none text-amber-900 bg-white/70 rounded-xl p-3 border border-amber-100">
+                      <div className="prose prose-sm max-w-none text-sand-900 bg-white/70 rounded-xl p-3 border border-peach-200">
                         <div dangerouslySetInnerHTML={{ __html: selectedDog.behavior_notes }} />
                       </div>
                     </div>
@@ -787,19 +787,19 @@ export default function App() {
           </div>
           {showAdvancedOwnerSearch && (
             <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
-              <div className="card py-4 border-l-4 border-l-amber-300">
+              <div className="card py-4 border-l-4 border-l-peach-300">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-peach-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 2L2 7l10 5 10-5-10-5z"/>
                       <path d="M2 17l10 5 10-5"/>
                       <path d="M2 12l10 5 10-5"/>
                     </svg>
-                    <p className="text-sm font-medium text-amber-700">Filtrovať podľa plemena psa</p>
+                    <p className="text-sm font-medium text-sand-700">Filtrovať podľa plemena psa</p>
                   </div>
                   <button
                     type="button"
-                    className="text-xs text-amber-600 hover:text-amber-700 px-3 py-1.5 rounded-full hover:bg-amber-50 transition-colors disabled:opacity-60"
+                    className="text-xs text-peach-600 hover:text-peach-700 px-3 py-1.5 rounded-full hover:bg-peach-50 transition-colors disabled:opacity-60"
                     onClick={() => setOwnerBreedFilter('')}
                     disabled={!ownerBreedFilter}
                   >
@@ -820,8 +820,8 @@ export default function App() {
                         }}
                         className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
                           selected
-                            ? 'bg-amber-200 text-amber-700 border-amber-300 shadow-sm'
-                            : 'border-amber-200 text-amber-600 hover:border-amber-300 hover:bg-amber-50'
+                            ? 'bg-peach-200 text-peach-700 border-peach-300 shadow-sm'
+                            : 'border-peach-200 text-peach-600 hover:border-peach-300 hover:bg-peach-50'
                         }`}
                       >
                         {breed}
@@ -829,21 +829,21 @@ export default function App() {
                     );
                   })}
                   {availableBreeds.length === 0 && (
-                    <p className="text-sm text-amber-400/80">Zatiaľ žiadne plemená.</p>
+                    <p className="text-sm text-sand-400">Zatiaľ žiadne plemená.</p>
                   )}
                 </div>
               </div>
-              <div className="card py-4 border-l-4 border-l-blue-300">
+              <div className="card py-4 border-l-4 border-l-sand-300">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-peach-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                     </svg>
-                    <p className="text-sm font-medium text-blue-700">Filtrovať podľa spôsobu komunikácie</p>
+                    <p className="text-sm font-medium text-sand-700">Filtrovať podľa spôsobu komunikácie</p>
                   </div>
                   <button
                     type="button"
-                    className="text-xs text-blue-600 hover:text-blue-700 px-3 py-1.5 rounded-full hover:bg-blue-50 transition-colors disabled:opacity-60"
+                    className="text-xs text-peach-600 hover:text-peach-700 px-3 py-1.5 rounded-full hover:bg-peach-50 transition-colors disabled:opacity-60"
                     onClick={() => setOwnerContactTagFilter([])}
                     disabled={ownerContactTagFilter.length === 0}
                   >
@@ -866,8 +866,8 @@ export default function App() {
                         }}
                         className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
                           selected
-                            ? 'bg-blue-200 text-blue-700 border-blue-300 shadow-sm'
-                            : 'border-blue-200 text-blue-600 hover:border-blue-300 hover:bg-blue-50'
+                            ? 'bg-sand-200 text-sand-700 border-sand-300 shadow-sm'
+                            : 'border-sand-200 text-sand-600 hover:border-sand-300 hover:bg-sand-100'
                         }`}
                       >
                         {method}
@@ -875,7 +875,7 @@ export default function App() {
                     );
                   })}
                   {availableCommunicationMethods.length === 0 && (
-                    <p className="text-sm text-blue-400/80">Zatiaľ žiadne spôsoby komunikácie.</p>
+                    <p className="text-sm text-sand-400">Zatiaľ žiadne spôsoby komunikácie.</p>
                   )}
                 </div>
               </div>
@@ -920,7 +920,7 @@ export default function App() {
                         {owner.communication_methods.map((method, idx) => (
                           <span
                             key={idx}
-                            className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium"
+                            className="px-3 py-1 rounded-full bg-sand-100 text-sand-700 text-xs font-medium border border-sand-200"
                           >
                             {method.method}
                           </span>
@@ -996,8 +996,8 @@ export default function App() {
               <div className="space-y-2">
                 <h3 className="text-2xl font-light text-beige-800">{selectedOwner.name}</h3>
                 {selectedOwner.communication_methods && selectedOwner.communication_methods.length > 0 && (
-                  <div className="bg-gradient-to-br from-blue-50/80 to-cyan-50/60 rounded-2xl p-4 border border-blue-100 space-y-3">
-                    <p className="text-xs font-semibold text-blue-600 uppercase tracking-wider flex items-center gap-2">
+                  <div className="bg-gradient-to-br from-sand-100/80 to-sand-50 rounded-2xl p-4 border border-sand-200 space-y-3">
+                    <p className="text-xs font-semibold text-peach-600 uppercase tracking-wider flex items-center gap-2">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                       </svg>
@@ -1005,11 +1005,11 @@ export default function App() {
                     </p>
                     <div className="space-y-3">
                       {selectedOwner.communication_methods.map((method, idx) => (
-                        <div key={idx} className="bg-white/60 rounded-xl p-3 border border-blue-100">
-                          <span className="text-sm font-medium text-blue-700">{method.method}</span>
+                        <div key={idx} className="bg-white/60 rounded-xl p-3 border border-sand-200">
+                          <span className="text-sm font-medium text-sand-700">{method.method}</span>
                           {method.details && (
                             <div 
-                              className="prose prose-sm max-w-none text-blue-800 mt-2"
+                              className="prose prose-sm max-w-none text-sand-800 mt-2"
                               dangerouslySetInnerHTML={{ __html: method.details }}
                             />
                           )}
@@ -1019,8 +1019,8 @@ export default function App() {
                   </div>
                 )}
                 {selectedOwner.important_info && (
-                  <div className="bg-gradient-to-br from-amber-50 via-yellow-50/80 to-orange-50/60 rounded-2xl p-4 border-2 border-amber-200 shadow-sm space-y-3">
-                    <div className="flex items-center gap-2 text-amber-700">
+                  <div className="bg-gradient-to-br from-peach-100 via-peach-50 to-sand-50 rounded-2xl p-4 border-2 border-peach-300 shadow-sm space-y-3">
+                    <div className="flex items-center gap-2 text-peach-700">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                         <polyline points="14 2 14 8 20 8"/>
@@ -1031,7 +1031,7 @@ export default function App() {
                         Dôležité info
                       </p>
                     </div>
-                    <div className="prose prose-sm max-w-none text-amber-900 bg-white/70 rounded-xl p-3 border border-amber-100">
+                    <div className="prose prose-sm max-w-none text-sand-900 bg-white/70 rounded-xl p-3 border border-peach-200">
                       <div dangerouslySetInnerHTML={{ __html: selectedOwner.important_info }} />
                     </div>
                   </div>
@@ -1198,8 +1198,8 @@ export default function App() {
         <div className="fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-4 fade-in duration-300">
           <div className={`px-5 py-3 rounded-2xl shadow-lg flex items-center gap-3 ${
             toast.type === 'error' 
-              ? 'bg-blush-500 text-white' 
-              : 'bg-emerald-500 text-white'
+              ? 'bg-peach-600 text-white' 
+              : 'bg-peach-500 text-white'
           }`}>
             {toast.type === 'error' ? (
               <svg

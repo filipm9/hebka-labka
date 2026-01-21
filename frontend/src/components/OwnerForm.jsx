@@ -140,15 +140,15 @@ export function OwnerForm({
       </div>
 
       {/* Communication Methods Section */}
-      <div className="bg-gradient-to-br from-blue-50/80 to-cyan-50/60 rounded-3xl p-6 border border-blue-100 space-y-5">
+      <div className="bg-gradient-to-br from-sand-100/80 to-sand-50 rounded-3xl p-6 border border-sand-200 space-y-5">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-blue-700">Spôsoby komunikácie</label>
+            <label className="text-sm font-medium text-sand-700">Spôsoby komunikácie</label>
             {onOpenTagsAdmin && (
               <button
                 type="button"
                 onClick={onOpenTagsAdmin}
-                className="text-blue-500 hover:text-blue-600 transition-colors px-3 py-1.5 rounded-full hover:bg-blue-100 text-xs font-medium flex items-center gap-1.5"
+                className="text-peach-500 hover:text-peach-600 transition-colors px-3 py-1.5 rounded-full hover:bg-sand-100 text-xs font-medium flex items-center gap-1.5"
                 title="Spravovať spôsoby komunikácie"
               >
                 <svg
@@ -184,8 +184,8 @@ export function OwnerForm({
                   onClick={() => handleCommunicationMethodToggle(method)}
                   className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
                     isSelected
-                      ? 'bg-blue-200 text-blue-800 border-blue-300 shadow-sm'
-                      : 'border-blue-200 text-blue-600 hover:border-blue-300 hover:bg-blue-100/80 bg-white/60'
+                      ? 'bg-sand-200 text-sand-800 border-peach-300 shadow-sm'
+                      : 'border-sand-300 text-peach-600 hover:border-peach-300 hover:bg-sand-100/80 bg-white/60'
                   }`}
                 >
                   {method}
@@ -197,12 +197,12 @@ export function OwnerForm({
               .map((method) => (
                 <span
                   key={method.method}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-medium"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-sand-100 text-sand-700 text-sm font-medium"
                 >
                   {method.method}
                   <button
                     type="button"
-                    className="text-blue-500 hover:text-blue-700 rounded-full hover:bg-blue-200 p-0.5"
+                    className="text-peach-500 hover:text-sand-700 rounded-full hover:bg-sand-200 p-0.5"
                     onClick={() => handleCommunicationMethodToggle(method.method)}
                   >
                     ×
@@ -210,7 +210,7 @@ export function OwnerForm({
                 </span>
               ))}
             {availableCommunicationMethods.length === 0 && (form.communication_methods || []).length === 0 && (
-              <p className="text-sm text-blue-400 italic">Žiadne spôsoby komunikácie k dispozícii</p>
+              <p className="text-sm text-sand-400 italic">Žiadne spôsoby komunikácie k dispozícii</p>
             )}
           </div>
         </div>
@@ -218,19 +218,19 @@ export function OwnerForm({
         {/* Details for each selected communication method */}
         {(form.communication_methods || []).length > 0 && (
           <div className="space-y-4">
-            <label className="text-sm font-medium text-blue-700">Detaily komunikácie</label>
+            <label className="text-sm font-medium text-sand-700">Detaily komunikácie</label>
             {(form.communication_methods || []).map((method) => {
               const methodRef = getCommunicationDetailsRef(method.method);
               return (
-                <div key={method.method} className="bg-white/60 rounded-2xl p-4 border border-blue-100">
+                <div key={method.method} className="bg-white/60 rounded-2xl p-4 border border-sand-200">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm font-medium text-blue-700">{method.method}</span>
+                    <span className="text-sm font-medium text-sand-700">{method.method}</span>
                   </div>
-                  <div className="border border-blue-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-                    <div className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-blue-100">
+                  <div className="border border-sand-300 rounded-2xl overflow-hidden bg-white shadow-sm">
+                    <div className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-sand-100 to-sand-50 border-b border-sand-200">
                       <button
                         type="button"
-                        className="p-2 hover:bg-white rounded-xl text-blue-600 hover:text-blue-700 transition-colors"
+                        className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-sand-700 transition-colors"
                         title="Tučné"
                         onClick={(e) => {
                           e.preventDefault();
@@ -262,7 +262,7 @@ export function OwnerForm({
                       </button>
                       <button
                         type="button"
-                        className="p-2 hover:bg-white rounded-xl text-blue-600 hover:text-blue-700 transition-colors"
+                        className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-sand-700 transition-colors"
                         title="Kurzíva"
                         onClick={(e) => {
                           e.preventDefault();
@@ -287,10 +287,10 @@ export function OwnerForm({
                           />
                         </svg>
                       </button>
-                      <div className="w-px h-5 bg-blue-200 mx-1" />
+                      <div className="w-px h-5 bg-sand-200 mx-1" />
                       <button
                         type="button"
-                        className="p-2 hover:bg-white rounded-xl text-blue-600 hover:text-blue-700 transition-colors"
+                        className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-sand-700 transition-colors"
                         title="Zoznam s odrážkami"
                         onClick={(e) => {
                           e.preventDefault();
@@ -321,7 +321,7 @@ export function OwnerForm({
                       }}
                       contentEditable
                       suppressContentEditableWarning
-                      className="w-full px-4 py-3 min-h-[80px] bg-white focus:outline-none prose prose-sm max-w-none text-blue-800"
+                      className="w-full px-4 py-3 min-h-[80px] bg-white focus:outline-none prose prose-sm max-w-none text-sand-800"
                       onInput={() => handleCommunicationMethodDetailsInput(method.method)}
                       placeholder={`Detaily pre ${method.method} (napr. telefónne číslo, Instagram meno...)`}
                       style={{
@@ -340,10 +340,10 @@ export function OwnerForm({
       {/* Important Info Section */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t-2 border-dashed border-amber-300"></div>
+          <div className="w-full border-t-2 border-dashed border-peach-300"></div>
         </div>
         <div className="relative flex justify-center">
-          <span className="bg-white px-4 py-1 text-sm font-bold text-amber-700 uppercase tracking-wider flex items-center gap-2">
+          <span className="bg-white px-4 py-1 text-sm font-bold text-peach-700 uppercase tracking-wider flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
               <polyline points="14 2 14 8 20 8"/>
@@ -355,12 +355,12 @@ export function OwnerForm({
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-amber-50 via-yellow-50/80 to-orange-50/60 rounded-3xl p-5 border-2 border-amber-200 shadow-sm">
-        <div className="border-2 border-amber-200 rounded-2xl overflow-hidden bg-white shadow-sm">
-          <div className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-amber-100 to-yellow-50 border-b border-amber-200">
+      <div className="bg-gradient-to-br from-peach-100 via-peach-50 to-sand-50 rounded-3xl p-5 border-2 border-peach-200 shadow-sm">
+        <div className="border-2 border-peach-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+          <div className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-peach-100 to-sand-50 border-b border-peach-200">
             <button
               type="button"
-              className="p-2 hover:bg-white rounded-xl text-amber-600 hover:text-amber-700 transition-colors"
+              className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-peach-700 transition-colors"
               title="Tučné"
               onClick={(e) => {
                 e.preventDefault();
@@ -392,7 +392,7 @@ export function OwnerForm({
             </button>
             <button
               type="button"
-              className="p-2 hover:bg-white rounded-xl text-amber-600 hover:text-amber-700 transition-colors"
+              className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-peach-700 transition-colors"
               title="Kurzíva"
               onClick={(e) => {
                 e.preventDefault();
@@ -417,10 +417,10 @@ export function OwnerForm({
                 />
               </svg>
             </button>
-            <div className="w-px h-5 bg-amber-300 mx-1" />
+            <div className="w-px h-5 bg-peach-300 mx-1" />
             <button
               type="button"
-              className="p-2 hover:bg-white rounded-xl text-amber-600 hover:text-amber-700 transition-colors"
+              className="p-2 hover:bg-white rounded-xl text-peach-600 hover:text-peach-700 transition-colors"
               title="Zoznam s odrážkami"
               onClick={(e) => {
                 e.preventDefault();
@@ -453,7 +453,7 @@ export function OwnerForm({
             ref={importantInfoRef}
             contentEditable
             suppressContentEditableWarning
-            className="w-full px-4 py-3 min-h-[160px] bg-white focus:outline-none prose prose-sm max-w-none text-amber-900"
+            className="w-full px-4 py-3 min-h-[160px] bg-white focus:outline-none prose prose-sm max-w-none text-sand-900"
             onInput={handleImportantInfoInput}
             placeholder="Sem napíš všetko dôležité..."
             style={{
@@ -486,7 +486,7 @@ export function OwnerForm({
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-blush-50/80 to-rose-50/60 rounded-3xl p-5 border border-blush-200 space-y-4">
+          <div className="bg-gradient-to-br from-peach-50 to-sand-50 rounded-3xl p-5 border border-blush-200 space-y-4">
             {/* Current dogs for this owner - now using M:M relationship */}
             {(() => {
               const ownerDogs = allDogs.filter(d => 
@@ -638,7 +638,7 @@ export function OwnerForm({
                                       {ownerNames ? (
                                         <span>Majitelia: {ownerNames}</span>
                                       ) : !hasOwners && (
-                                        <span className="text-amber-500 italic">Bez majiteľa</span>
+                                        <span className="text-peach-500 italic">Bez majiteľa</span>
                                       )}
                                     </p>
                                   </div>
