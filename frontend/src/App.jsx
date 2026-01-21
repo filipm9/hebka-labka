@@ -99,6 +99,7 @@ export default function App() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [changePasswordError, setChangePasswordError] = useState(null);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
 
   const availableTags = useMemo(() => getAvailableTags(), [tagsRefreshKey]);
   const availableCharacterTags = useMemo(() => getAvailableCharacterTags(), [characterTagsRefreshKey]);
@@ -301,107 +302,138 @@ export default function App() {
               onChange={(e) => setDogSearch(e.target.value)}
             />
             <button
+              onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+              className={`px-4 py-3 rounded-2xl font-medium transition-all flex items-center gap-2 ${
+                showAdvancedSearch || dogTagFilter.length > 0 || dogCharacterTagFilter.length > 0
+                  ? 'bg-beige-200 text-beige-700 border border-beige-300'
+                  : 'bg-white/80 text-beige-600 border border-beige-300 hover:bg-beige-50'
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className={`h-4 w-4 transition-transform ${showAdvancedSearch ? 'rotate-180' : ''}`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+              </svg>
+              <span className="hidden sm:inline">Filtre</span>
+              {(dogTagFilter.length > 0 || dogCharacterTagFilter.length > 0) && (
+                <span className="bg-blush-400 text-white text-xs rounded-full px-2 py-0.5 min-w-[1.25rem]">
+                  {dogTagFilter.length + dogCharacterTagFilter.length}
+                </span>
+              )}
+            </button>
+            <button
               onClick={() => setEditingDog({})}
               className="bg-blush-400 text-white px-6 py-3 rounded-2xl font-medium hover:bg-blush-500 shadow-sm hover:shadow-md transition-all"
             >
               Pridať psa
             </button>
           </div>
-          <div className="card py-4 border-l-4 border-l-emerald-300">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M19.5 12.572l-7.5 7.428-7.5-7.428a5 5 0 1 1 7.5-6.566 5 5 0 1 1 7.5 6.566z"/>
-                </svg>
-                <p className="text-sm font-medium text-emerald-700">Filtrovať podľa zdravotných tagov</p>
-              </div>
-              <button
-                type="button"
-                className="text-xs text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-full hover:bg-emerald-50 transition-colors disabled:opacity-60"
-                onClick={() => setDogTagFilter([])}
-                disabled={dogTagFilter.length === 0}
-              >
-                Vymazať filter
-              </button>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {availableTags.map((tag) => {
-                const selected = dogTagFilter.includes(tag);
-                return (
+          {showAdvancedSearch && (
+            <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
+              <div className="card py-4 border-l-4 border-l-emerald-300">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M19.5 12.572l-7.5 7.428-7.5-7.428a5 5 0 1 1 7.5-6.566 5 5 0 1 1 7.5 6.566z"/>
+                    </svg>
+                    <p className="text-sm font-medium text-emerald-700">Filtrovať podľa zdravotných tagov</p>
+                  </div>
                   <button
-                    key={tag}
                     type="button"
-                    onClick={() => {
-                      setDogTagFilter((current) =>
-                        current.includes(tag)
-                          ? current.filter((t) => t !== tag)
-                          : [...current, tag],
-                      );
-                    }}
-                    className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
-                      selected
-                        ? 'bg-emerald-200 text-emerald-700 border-emerald-300 shadow-sm'
-                        : 'border-emerald-200 text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50'
-                    }`}
+                    className="text-xs text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-full hover:bg-emerald-50 transition-colors disabled:opacity-60"
+                    onClick={() => setDogTagFilter([])}
+                    disabled={dogTagFilter.length === 0}
                   >
-                    {tag}
+                    Vymazať filter
                   </button>
-                );
-              })}
-              {availableTags.length === 0 && (
-                <p className="text-sm text-emerald-400/80">Zatiaľ žiadne zdravotné tagy.</p>
-              )}
-            </div>
-          </div>
-          <div className="card py-4 border-l-4 border-l-violet-300">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"/>
-                  <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-                  <line x1="9" y1="9" x2="9.01" y2="9"/>
-                  <line x1="15" y1="9" x2="15.01" y2="9"/>
-                </svg>
-                <p className="text-sm font-medium text-violet-700">Filtrovať podľa povahových tagov</p>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {availableTags.map((tag) => {
+                    const selected = dogTagFilter.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => {
+                          setDogTagFilter((current) =>
+                            current.includes(tag)
+                              ? current.filter((t) => t !== tag)
+                              : [...current, tag],
+                          );
+                        }}
+                        className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                          selected
+                            ? 'bg-emerald-200 text-emerald-700 border-emerald-300 shadow-sm'
+                            : 'border-emerald-200 text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50'
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    );
+                  })}
+                  {availableTags.length === 0 && (
+                    <p className="text-sm text-emerald-400/80">Zatiaľ žiadne zdravotné tagy.</p>
+                  )}
+                </div>
               </div>
-              <button
-                type="button"
-                className="text-xs text-violet-600 hover:text-violet-700 px-3 py-1.5 rounded-full hover:bg-violet-50 transition-colors disabled:opacity-60"
-                onClick={() => setDogCharacterTagFilter([])}
-                disabled={dogCharacterTagFilter.length === 0}
-              >
-                Vymazať filter
-              </button>
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {availableCharacterTags.map((tag) => {
-                const selected = dogCharacterTagFilter.includes(tag);
-                return (
+              <div className="card py-4 border-l-4 border-l-violet-300">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-violet-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                      <line x1="9" y1="9" x2="9.01" y2="9"/>
+                      <line x1="15" y1="9" x2="15.01" y2="9"/>
+                    </svg>
+                    <p className="text-sm font-medium text-violet-700">Filtrovať podľa povahových tagov</p>
+                  </div>
                   <button
-                    key={tag}
                     type="button"
-                    onClick={() => {
-                      setDogCharacterTagFilter((current) =>
-                        current.includes(tag)
-                          ? current.filter((t) => t !== tag)
-                          : [...current, tag],
-                      );
-                    }}
-                    className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
-                      selected
-                        ? 'bg-violet-200 text-violet-700 border-violet-300 shadow-sm'
-                        : 'border-violet-200 text-violet-600 hover:border-violet-300 hover:bg-violet-50'
-                    }`}
+                    className="text-xs text-violet-600 hover:text-violet-700 px-3 py-1.5 rounded-full hover:bg-violet-50 transition-colors disabled:opacity-60"
+                    onClick={() => setDogCharacterTagFilter([])}
+                    disabled={dogCharacterTagFilter.length === 0}
                   >
-                    {tag}
+                    Vymazať filter
                   </button>
-                );
-              })}
-              {availableCharacterTags.length === 0 && (
-                <p className="text-sm text-violet-400/80">Zatiaľ žiadne povahové tagy.</p>
-              )}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {availableCharacterTags.map((tag) => {
+                    const selected = dogCharacterTagFilter.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => {
+                          setDogCharacterTagFilter((current) =>
+                            current.includes(tag)
+                              ? current.filter((t) => t !== tag)
+                              : [...current, tag],
+                          );
+                        }}
+                        className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                          selected
+                            ? 'bg-violet-200 text-violet-700 border-violet-300 shadow-sm'
+                            : 'border-violet-200 text-violet-600 hover:border-violet-300 hover:bg-violet-50'
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    );
+                  })}
+                  {availableCharacterTags.length === 0 && (
+                    <p className="text-sm text-violet-400/80">Zatiaľ žiadne povahové tagy.</p>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          )}
           {editingDog && (
             <DogForm
               owners={owners}
