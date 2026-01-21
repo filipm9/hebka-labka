@@ -20,7 +20,6 @@ create table if not exists owners (
 
 create table if not exists dogs (
   id serial primary key,
-  owner_id integer not null references owners(id) on delete cascade,
   name text not null,
   breed text,
   weight numeric,
@@ -31,43 +30,24 @@ create table if not exists dogs (
   character_tags text[] default '{}',
   character_notes text,
   cosmetics_used jsonb default '[]'::jsonb,
+  grooming_time_minutes integer,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
 
--- Migration: Add health_notes column if it doesn't exist
-do $$
-begin
-  if not exists (select 1 from information_schema.columns where table_name = 'dogs' and column_name = 'health_notes') then
-    alter table dogs add column health_notes text;
-  end if;
-end $$;
-
--- Migration: Add character_tags and character_notes columns if they don't exist
-do $$
-begin
-  if not exists (select 1 from information_schema.columns where table_name = 'dogs' and column_name = 'character_tags') then
-    alter table dogs add column character_tags text[] default '{}';
-  end if;
-  if not exists (select 1 from information_schema.columns where table_name = 'dogs' and column_name = 'character_notes') then
-    alter table dogs add column character_notes text;
-  end if;
-end $$;
-
--- Migration: Add cosmetics_used column if it doesn't exist
-do $$
-begin
-  if not exists (select 1 from information_schema.columns where table_name = 'dogs' and column_name = 'cosmetics_used') then
-    alter table dogs add column cosmetics_used jsonb default '[]'::jsonb;
-  end if;
-end $$;
+create table if not exists dog_owners (
+  dog_id integer not null references dogs(id) on delete cascade,
+  owner_id integer not null references owners(id) on delete cascade,
+  created_at timestamp with time zone default now(),
+  primary key (dog_id, owner_id)
+);
 
 create index if not exists idx_dogs_name on dogs using gin (name gin_trgm_ops);
 create index if not exists idx_owners_name on owners using gin (name gin_trgm_ops);
-create index if not exists idx_dogs_owner on dogs(owner_id);
+create index if not exists idx_dog_owners_dog_id on dog_owners(dog_id);
+create index if not exists idx_dog_owners_owner_id on dog_owners(owner_id);
 
 -- Seed default login (email: admin@example.com, password: changeme)
 insert into users (email, password_hash)
 values ('admin@example.com', crypt('changeme', gen_salt('bf')))
 on conflict (email) do nothing;
-

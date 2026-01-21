@@ -16,7 +16,6 @@ create table if not exists owners (
 
 create table if not exists dogs (
   id serial primary key,
-  owner_id integer not null references owners(id) on delete cascade,
   name text not null,
   breed text,
   weight numeric,
@@ -32,12 +31,19 @@ create table if not exists dogs (
   updated_at timestamp with time zone default now()
 );
 
+create table if not exists dog_owners (
+  dog_id integer not null references dogs(id) on delete cascade,
+  owner_id integer not null references owners(id) on delete cascade,
+  created_at timestamp with time zone default now(),
+  primary key (dog_id, owner_id)
+);
+
 create extension if not exists pg_trgm;
 
 create index if not exists idx_dogs_name on dogs using gin (name gin_trgm_ops);
 create index if not exists idx_owners_name on owners using gin (name gin_trgm_ops);
-create index if not exists idx_dogs_owner on dogs(owner_id);
+create index if not exists idx_dog_owners_dog_id on dog_owners(dog_id);
+create index if not exists idx_dog_owners_owner_id on dog_owners(owner_id);
 
 -- seed single user; replace hash with bcrypt hash of your password
 -- insert into users (email, password_hash) values ('you@example.com', '$2a$10$...');
-
