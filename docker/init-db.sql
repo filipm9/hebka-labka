@@ -28,9 +28,18 @@ create table if not exists dogs (
   birthdate date,
   behavior_notes text,
   grooming_tolerance text[] default '{}',
+  health_notes text,
   created_at timestamp with time zone default now(),
   updated_at timestamp with time zone default now()
 );
+
+-- Migration: Add health_notes column if it doesn't exist
+do $$
+begin
+  if not exists (select 1 from information_schema.columns where table_name = 'dogs' and column_name = 'health_notes') then
+    alter table dogs add column health_notes text;
+  end if;
+end $$;
 
 create index if not exists idx_dogs_name on dogs using gin (name gin_trgm_ops);
 create index if not exists idx_owners_name on owners using gin (name gin_trgm_ops);

@@ -282,12 +282,17 @@ export default function App() {
               Pridať psa
             </button>
           </div>
-          <div className="card py-4">
+          <div className="card py-4 border-l-4 border-l-emerald-300">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-medium text-beige-700">Filtrovať podľa tagov</p>
+              <div className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19.5 12.572l-7.5 7.428-7.5-7.428a5 5 0 1 1 7.5-6.566 5 5 0 1 1 7.5 6.566z"/>
+                </svg>
+                <p className="text-sm font-medium text-emerald-700">Filtrovať podľa zdravotných tagov</p>
+              </div>
               <button
                 type="button"
-                className="text-xs text-beige-600 hover:text-beige-700 px-3 py-1.5 rounded-full hover:bg-beige-50 transition-colors disabled:opacity-60"
+                className="text-xs text-emerald-600 hover:text-emerald-700 px-3 py-1.5 rounded-full hover:bg-emerald-50 transition-colors disabled:opacity-60"
                 onClick={() => setDogTagFilter([])}
                 disabled={dogTagFilter.length === 0}
               >
@@ -310,8 +315,8 @@ export default function App() {
                     }}
                     className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
                       selected
-                        ? 'bg-sage-200 text-sage-700 border-sage-300 shadow-sm'
-                        : 'border-beige-300 text-beige-600 hover:border-blush-300 hover:bg-blush-50'
+                        ? 'bg-emerald-200 text-emerald-700 border-emerald-300 shadow-sm'
+                        : 'border-emerald-200 text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50'
                     }`}
                   >
                     {tag}
@@ -319,7 +324,7 @@ export default function App() {
                 );
               })}
               {availableTags.length === 0 && (
-                <p className="text-sm text-beige-400">Zatiaľ žiadne tagy.</p>
+                <p className="text-sm text-emerald-400/80">Zatiaľ žiadne zdravotné tagy.</p>
               )}
             </div>
           </div>
@@ -395,21 +400,34 @@ export default function App() {
                       </p>
                     )}
                   </div>
-                  {toTags(selectedDog.grooming_tolerance).length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-beige-500 uppercase tracking-wider">
-                        Vlastné tagy
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {toTags(selectedDog.grooming_tolerance).map((tag) => (
-                          <span
-                            key={tag}
-                            className="px-3 py-1.5 rounded-full bg-sage-100 text-sage-700 text-xs font-medium"
-                          >
-                            {tag}
-                          </span>
-                        ))}
+                  {/* Zdravie Section */}
+                  {(toTags(selectedDog.grooming_tolerance).length > 0 || selectedDog.health_notes) && (
+                    <div className="bg-gradient-to-br from-emerald-50/80 to-teal-50/60 rounded-2xl p-4 border border-emerald-100 space-y-4">
+                      <div className="flex items-center gap-2 text-emerald-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M19.5 12.572l-7.5 7.428-7.5-7.428a5 5 0 1 1 7.5-6.566 5 5 0 1 1 7.5 6.566z"/>
+                        </svg>
+                        <p className="text-xs font-semibold uppercase tracking-wider">
+                          Zdravie
+                        </p>
                       </div>
+                      {toTags(selectedDog.grooming_tolerance).length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {toTags(selectedDog.grooming_tolerance).map((tag) => (
+                            <span
+                              key={tag}
+                              className="px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {selectedDog.health_notes && (
+                        <div className="prose prose-sm max-w-none text-emerald-800 bg-white/60 rounded-xl p-3">
+                          <div dangerouslySetInnerHTML={{ __html: selectedDog.health_notes }} />
+                        </div>
+                      )}
                     </div>
                   )}
                   {selectedDog.behavior_notes && (

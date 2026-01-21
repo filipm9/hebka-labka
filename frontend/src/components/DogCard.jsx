@@ -18,6 +18,7 @@ function toTags(value) {
 
 export function DogCard({ dog, onEdit, onDelete, onOpen, onTagClick }) {
   const tags = toTags(dog.grooming_tolerance);
+  const hasHealthInfo = tags.length > 0 || dog.health_notes;
 
   return (
     <div
@@ -25,14 +26,23 @@ export function DogCard({ dog, onEdit, onDelete, onOpen, onTagClick }) {
       onClick={() => onOpen(dog)}
     >
       <div className="space-y-2 flex-1">
-        <p className="text-xl font-light text-beige-800">{dog.name}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-xl font-light text-beige-800">{dog.name}</p>
+          {hasHealthInfo && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-100" title="Zdravotné informácie">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19.5 12.572l-7.5 7.428-7.5-7.428a5 5 0 1 1 7.5-6.566 5 5 0 1 1 7.5 6.566z"/>
+              </svg>
+            </span>
+          )}
+        </div>
         <p className="text-sm text-beige-600">Majiteľ: {dog.owner_name}</p>
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2 pt-2">
             {tags.slice(0, 3).map((tag) => (
               <button
                 key={tag}
-                className="px-3 py-1 rounded-full bg-sage-100 text-sage-700 text-xs font-medium"
+                className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium hover:bg-emerald-200 transition-colors"
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -43,7 +53,7 @@ export function DogCard({ dog, onEdit, onDelete, onOpen, onTagClick }) {
               </button>
             ))}
             {tags.length > 3 && (
-              <span className="text-xs text-beige-400 px-2">+{tags.length - 3}</span>
+              <span className="text-xs text-emerald-400 px-2">+{tags.length - 3}</span>
             )}
           </div>
         )}

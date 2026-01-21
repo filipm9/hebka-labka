@@ -79,6 +79,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
     age: '',
     grooming_tolerance: [],
     behavior_notes: '',
+    health_notes: '',
   });
   const [newOwner, setNewOwner] = useState({
     name: '',
@@ -91,6 +92,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
   const ownerDropdownRef = useRef(null);
   const breedDropdownRef = useRef(null);
   const notesRef = useRef(null);
+  const healthNotesRef = useRef(null);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -138,16 +140,21 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
           ? toTags(initial.grooming_tolerance)
           : [],
         behavior_notes: initial.behavior_notes || '',
+        health_notes: initial.health_notes || '',
       });
       setTimeout(() => {
         if (notesRef.current && initial.behavior_notes) {
           notesRef.current.innerHTML = initial.behavior_notes;
         }
+        if (healthNotesRef.current && initial.health_notes) {
+          healthNotesRef.current.innerHTML = initial.health_notes;
+        }
       }, 0);
     } else {
-      setForm((f) => ({ ...f, grooming_tolerance: [] }));
+      setForm((f) => ({ ...f, grooming_tolerance: [], health_notes: '' }));
       setTimeout(() => {
         if (notesRef.current) notesRef.current.innerHTML = '';
+        if (healthNotesRef.current) healthNotesRef.current.innerHTML = '';
       }, 0);
     }
   }, [initial]);
@@ -188,6 +195,11 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
     setForm((f) => ({ ...f, behavior_notes: html }));
   };
 
+  const handleHealthNotesInput = () => {
+    const html = healthNotesRef.current ? healthNotesRef.current.innerHTML : '';
+    setForm((f) => ({ ...f, health_notes: html }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const birthdate = ageToDate(form.age);
@@ -197,6 +209,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
       weight: form.weight ? Number(form.weight) : null,
       birthdate: birthdate || null,
       behavior_notes: notesRef.current?.innerHTML || '',
+      health_notes: healthNotesRef.current?.innerHTML || '',
     };
     const ownerPayload = form.owner_id === 'new' ? newOwner : null;
     onSubmit({ dog: payload, newOwner: ownerPayload });
@@ -409,83 +422,15 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-beige-700">Vek (roky)</label>
-            <input
-              name="age"
-              inputMode="numeric"
-              value={form.age}
-              onChange={handleChange}
-              className="w-full rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-beige-700">Vlastné tagy</label>
-              {onOpenTagsAdmin && (
-                <button
-                  type="button"
-                  onClick={onOpenTagsAdmin}
-                  className="text-beige-500 hover:text-blush-500 transition-colors p-1 rounded-full hover:bg-blush-50"
-                  title="Spravovať tagy"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                </button>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {availableTags.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => handleTagToggle(tag)}
-                  className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
-                    toTags(form.grooming_tolerance).includes(tag)
-                      ? 'bg-sage-200 text-sage-700 border-sage-300 shadow-sm'
-                      : 'border-beige-300 text-beige-600 hover:border-blush-300 hover:bg-blush-50'
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-              {toTags(form.grooming_tolerance)
-                .filter((t) => !availableTags.includes(t))
-                .map((tag) => (
-                  <span
-                    key={tag}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-beige-100 text-beige-700 text-sm font-medium"
-                  >
-                    {tag}
-                    <button
-                      type="button"
-                      className="text-beige-500 hover:text-beige-700 rounded-full hover:bg-beige-200 p-0.5"
-                      onClick={() => handleTagToggle(tag)}
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-            </div>
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-beige-700">Vek (roky)</label>
+          <input
+            name="age"
+            inputMode="numeric"
+            value={form.age}
+            onChange={handleChange}
+            className="w-full rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
+          />
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium text-beige-700">Správanie (poznámky)</label>
@@ -686,6 +631,189 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
           </div>
         </div>
       </div>
+
+      {/* Zdravie Section - Visually Separated */}
+      <div className="relative mt-8">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full border-t-2 border-dashed border-emerald-200"></div>
+        </div>
+        <div className="relative flex justify-center">
+          <span className="bg-white px-4 py-1 text-sm font-semibold text-emerald-600 uppercase tracking-wider flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19.5 12.572l-7.5 7.428-7.5-7.428a5 5 0 1 1 7.5-6.566 5 5 0 1 1 7.5 6.566z"/>
+            </svg>
+            Zdravie
+          </span>
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-br from-emerald-50/80 to-teal-50/60 rounded-3xl p-6 border border-emerald-100 space-y-5">
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-emerald-700">Zdravotné tagy</label>
+            {onOpenTagsAdmin && (
+              <button
+                type="button"
+                onClick={onOpenTagsAdmin}
+                className="text-emerald-500 hover:text-emerald-600 transition-colors px-3 py-1.5 rounded-full hover:bg-emerald-100 text-xs font-medium flex items-center gap-1.5"
+                title="Spravovať tagy"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                Spravovať
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {availableTags.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => handleTagToggle(tag)}
+                className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                  toTags(form.grooming_tolerance).includes(tag)
+                    ? 'bg-emerald-200 text-emerald-800 border-emerald-300 shadow-sm'
+                    : 'border-emerald-200 text-emerald-600 hover:border-emerald-300 hover:bg-emerald-100/80 bg-white/60'
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+            {toTags(form.grooming_tolerance)
+              .filter((t) => !availableTags.includes(t))
+              .map((tag) => (
+                <span
+                  key={tag}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-sm font-medium"
+                >
+                  {tag}
+                  <button
+                    type="button"
+                    className="text-emerald-500 hover:text-emerald-700 rounded-full hover:bg-emerald-200 p-0.5"
+                    onClick={() => handleTagToggle(tag)}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            {availableTags.length === 0 && toTags(form.grooming_tolerance).length === 0 && (
+              <p className="text-sm text-emerald-400 italic">Žiadne zdravotné tagy k dispozícii</p>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-emerald-700">Zdravotné poznámky</label>
+          <div className="border border-emerald-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+            <div className="flex items-center gap-1 px-3 py-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-100">
+              <button
+                type="button"
+                className="p-2 hover:bg-white rounded-xl text-emerald-600 hover:text-emerald-700 transition-colors"
+                title="Tučné"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (healthNotesRef.current) {
+                    healthNotesRef.current.focus();
+                    document.execCommand('bold', false);
+                  }
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="p-2 hover:bg-white rounded-xl text-emerald-600 hover:text-emerald-700 transition-colors"
+                title="Kurzíva"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (healthNotesRef.current) {
+                    healthNotesRef.current.focus();
+                    document.execCommand('italic', false);
+                  }
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 4h4M6 20h8M8 4v16M14 4v16" />
+                </svg>
+              </button>
+              <div className="w-px h-5 bg-emerald-200 mx-1" />
+              <button
+                type="button"
+                className="p-2 hover:bg-white rounded-xl text-emerald-600 hover:text-emerald-700 transition-colors"
+                title="Zoznam s odrážkami"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (healthNotesRef.current) {
+                    healthNotesRef.current.focus();
+                    document.execCommand('insertUnorderedList', false);
+                  }
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <circle cx="6" cy="7" r="1.5" fill="currentColor" />
+                  <circle cx="6" cy="12" r="1.5" fill="currentColor" />
+                  <circle cx="6" cy="17" r="1.5" fill="currentColor" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 7h10M10 12h10M10 17h10" />
+                </svg>
+              </button>
+            </div>
+            <div
+              ref={healthNotesRef}
+              contentEditable
+              suppressContentEditableWarning
+              className="w-full px-4 py-3 min-h-[100px] bg-white focus:outline-none prose prose-sm max-w-none text-emerald-800"
+              onInput={handleHealthNotesInput}
+              placeholder="Alergie, lieky, zdravotné problémy..."
+              style={{
+                whiteSpace: 'pre-wrap',
+                lineHeight: '1.6',
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="flex gap-3 pt-2">
         <button
           type="submit"

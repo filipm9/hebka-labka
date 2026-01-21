@@ -89,21 +89,26 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
         setIsUpdating(true);
         try {
           const allDogs = await api.dogs('');
-          const updatePromises = allDogs
-            .filter((dog) => {
-              const tags = toTags(dog.grooming_tolerance);
-              return tags.includes(tag);
-            })
-            .map(async (dog) => {
-              const tags = toTags(dog.grooming_tolerance);
-              const updatedTags = tags.filter((t) => t !== tag);
-              return api.updateDog(dog.id, {
-                ...dog,
-                grooming_tolerance: updatedTags,
-              });
-            });
+          const dogsToUpdate = allDogs.filter((dog) => {
+            const tags = toTags(dog.grooming_tolerance);
+            return tags.includes(tag);
+          });
 
-          await Promise.all(updatePromises);
+          // Update dogs one by one with better error handling
+          for (const dog of dogsToUpdate) {
+            const tags = toTags(dog.grooming_tolerance);
+            const updatedTags = tags.filter((t) => t !== tag);
+            await api.updateDog(dog.id, {
+              owner_id: dog.owner_id,
+              name: dog.name,
+              breed: dog.breed,
+              weight: dog.weight,
+              birthdate: dog.birthdate,
+              behavior_notes: dog.behavior_notes,
+              grooming_tolerance: updatedTags,
+              health_notes: dog.health_notes,
+            });
+          }
           
           const updated = customTags.filter((t) => t !== tag);
           saveCustomTags(updated);
@@ -111,7 +116,8 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
           window.dispatchEvent(new Event('tagsUpdated'));
           if (onTagUpdate) onTagUpdate();
         } catch (error) {
-          setAlertMessage('Chyba pri aktualizácii tagov: ' + error.message);
+          console.error('Error deleting tag:', error);
+          setAlertMessage('Chyba pri aktualizácii tagov: ' + (error.message || 'Neznáma chyba'));
         } finally {
           setIsUpdating(false);
         }
@@ -141,21 +147,26 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
     setIsUpdating(true);
     try {
       const allDogs = await api.dogs('');
-      const updatePromises = allDogs
-        .filter((dog) => {
-          const tags = toTags(dog.grooming_tolerance);
-          return tags.includes(editingTag);
-        })
-        .map(async (dog) => {
-          const tags = toTags(dog.grooming_tolerance);
-          const updatedTags = tags.map((t) => (t === editingTag ? val : t));
-          return api.updateDog(dog.id, {
-            ...dog,
-            grooming_tolerance: updatedTags,
-          });
-        });
+      const dogsToUpdate = allDogs.filter((dog) => {
+        const tags = toTags(dog.grooming_tolerance);
+        return tags.includes(editingTag);
+      });
 
-      await Promise.all(updatePromises);
+      // Update dogs one by one with better error handling
+      for (const dog of dogsToUpdate) {
+        const tags = toTags(dog.grooming_tolerance);
+        const updatedTags = tags.map((t) => (t === editingTag ? val : t));
+        await api.updateDog(dog.id, {
+          owner_id: dog.owner_id,
+          name: dog.name,
+          breed: dog.breed,
+          weight: dog.weight,
+          birthdate: dog.birthdate,
+          behavior_notes: dog.behavior_notes,
+          grooming_tolerance: updatedTags,
+          health_notes: dog.health_notes,
+        });
+      }
       
       const updated = customTags.map((t) => (t === editingTag ? val : t));
       saveCustomTags(updated);
@@ -165,7 +176,8 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
       window.dispatchEvent(new Event('tagsUpdated'));
       if (onTagUpdate) onTagUpdate();
     } catch (error) {
-      setAlertMessage('Chyba pri aktualizácii tagov: ' + error.message);
+      console.error('Error updating tags:', error);
+      setAlertMessage('Chyba pri aktualizácii tagov: ' + (error.message || 'Neznáma chyba'));
     } finally {
       setIsUpdating(false);
     }
@@ -199,16 +211,20 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
         setIsUpdating(true);
         try {
           const allDogs = await api.dogs('');
-          const updatePromises = allDogs
-            .filter((dog) => dog.breed === breed)
-            .map(async (dog) => {
-              return api.updateDog(dog.id, {
-                ...dog,
-                breed: null,
-              });
-            });
+          const dogsToUpdate = allDogs.filter((dog) => dog.breed === breed);
 
-          await Promise.all(updatePromises);
+          for (const dog of dogsToUpdate) {
+            await api.updateDog(dog.id, {
+              owner_id: dog.owner_id,
+              name: dog.name,
+              breed: null,
+              weight: dog.weight,
+              birthdate: dog.birthdate,
+              behavior_notes: dog.behavior_notes,
+              grooming_tolerance: toTags(dog.grooming_tolerance),
+              health_notes: dog.health_notes,
+            });
+          }
           
           const updated = customBreeds.filter((b) => b !== breed);
           saveCustomBreeds(updated);
@@ -216,7 +232,8 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
           window.dispatchEvent(new Event('breedsUpdated'));
           if (onTagUpdate) onTagUpdate();
         } catch (error) {
-          setAlertMessage('Chyba pri aktualizácii plemien: ' + error.message);
+          console.error('Error deleting breed:', error);
+          setAlertMessage('Chyba pri aktualizácii plemien: ' + (error.message || 'Neznáma chyba'));
         } finally {
           setIsUpdating(false);
         }
@@ -246,16 +263,20 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
     setIsUpdating(true);
     try {
       const allDogs = await api.dogs('');
-      const updatePromises = allDogs
-        .filter((dog) => dog.breed === editingBreed)
-        .map(async (dog) => {
-          return api.updateDog(dog.id, {
-            ...dog,
-            breed: val,
-          });
-        });
+      const dogsToUpdate = allDogs.filter((dog) => dog.breed === editingBreed);
 
-      await Promise.all(updatePromises);
+      for (const dog of dogsToUpdate) {
+        await api.updateDog(dog.id, {
+          owner_id: dog.owner_id,
+          name: dog.name,
+          breed: val,
+          weight: dog.weight,
+          birthdate: dog.birthdate,
+          behavior_notes: dog.behavior_notes,
+          grooming_tolerance: toTags(dog.grooming_tolerance),
+          health_notes: dog.health_notes,
+        });
+      }
       
       const updated = customBreeds.map((b) => (b === editingBreed ? val : b));
       saveCustomBreeds(updated);
@@ -265,7 +286,8 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
       window.dispatchEvent(new Event('breedsUpdated'));
       if (onTagUpdate) onTagUpdate();
     } catch (error) {
-      setAlertMessage('Chyba pri aktualizácii plemien: ' + error.message);
+      console.error('Error updating breed:', error);
+      setAlertMessage('Chyba pri aktualizácii plemien: ' + (error.message || 'Neznáma chyba'));
     } finally {
       setIsUpdating(false);
     }
@@ -309,12 +331,17 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
         </div>
       )}
 
-      {/* Tags Section */}
+      {/* Health Tags Section */}
       <div className="space-y-5">
         <div className="space-y-3">
-          <label className="text-sm font-medium text-beige-700">
-            Tagy
-          </label>
+          <div className="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19.5 12.572l-7.5 7.428-7.5-7.428a5 5 0 1 1 7.5-6.566 5 5 0 1 1 7.5 6.566z"/>
+            </svg>
+            <label className="text-sm font-medium text-emerald-700">
+              Zdravotné tagy
+            </label>
+          </div>
           <div className="flex flex-wrap gap-2">
             {customTags.length === 0 ? (
               <p className="text-sm text-beige-400">Zatiaľ žiadne tagy.</p>
@@ -322,7 +349,7 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
               customTags.map((tag) => (
                 <div
                   key={tag}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-sage-100 text-sage-700 text-sm font-medium border border-sage-200"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 text-sm font-medium border border-emerald-200"
                 >
                   {editingTag === tag ? (
                     <>
@@ -337,13 +364,13 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
                             handleCancelEditTag();
                           }
                         }}
-                        className="px-3 py-1 rounded-xl border border-sage-300 bg-white text-sm w-28 text-beige-800 focus:outline-none focus:border-blush-300"
+                        className="px-3 py-1 rounded-xl border border-emerald-300 bg-white text-sm w-28 text-beige-800 focus:outline-none focus:border-emerald-400"
                         autoFocus
                       />
                       <button
                         type="button"
                         onClick={handleSaveEditTag}
-                        className="text-sage-600 hover:text-sage-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-sage-50 transition-colors"
+                        className="text-emerald-600 hover:text-emerald-700 font-medium disabled:opacity-50 p-1 rounded-full hover:bg-emerald-50 transition-colors"
                         title="Uložiť"
                         disabled={isUpdating}
                       >
@@ -389,8 +416,8 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
         </div>
 
         <div className="space-y-3">
-          <label className="text-sm font-medium text-beige-700">
-            Pridať nový tag
+          <label className="text-sm font-medium text-emerald-700">
+            Pridať nový zdravotný tag
           </label>
           <div className="flex gap-3">
             <input
@@ -403,13 +430,13 @@ export function TagsAdmin({ onClose, onTagUpdate }) {
                   handleAddTag();
                 }
               }}
-              placeholder="Názov tagu"
-              className="flex-1 rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
+              placeholder="Názov tagu (napr. Alergia, Lieky...)"
+              className="flex-1 rounded-2xl border border-emerald-200 bg-white/80 px-4 py-3 text-beige-800 placeholder-emerald-300 focus:bg-white focus:border-emerald-400 transition-all"
             />
             <button
               type="button"
               onClick={handleAddTag}
-              className="px-6 rounded-2xl bg-blush-400 text-white text-sm font-medium hover:bg-blush-500 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
+              className="px-6 rounded-2xl bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 shadow-sm hover:shadow-md disabled:opacity-50 transition-all"
               disabled={isUpdating}
             >
               Pridať
