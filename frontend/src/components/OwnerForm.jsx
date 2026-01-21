@@ -509,9 +509,13 @@ export function OwnerForm({ initial, onSubmit, onCancel, onOpenTagsAdmin, allDog
           </div>
 
           <div className="bg-gradient-to-br from-blush-50/80 to-rose-50/60 rounded-3xl p-5 border border-blush-200 space-y-4">
-            {/* Current dogs for this owner */}
+            {/* Current dogs for this owner - now using M:M relationship */}
             {(() => {
-              const ownerDogs = allDogs.filter(d => d.owner_id === initial.id);
+              const ownerDogs = allDogs.filter(d => 
+                Array.isArray(d.owners) 
+                  ? d.owners.some(o => o.id === initial.id)
+                  : d.owner_id === initial.id
+              );
               return ownerDogs.length > 0 ? (
                 <div className="space-y-2">
                   <p className="text-xs font-medium text-blush-600 uppercase tracking-wider">Aktuálne psy tohto majiteľa</p>
@@ -526,7 +530,7 @@ export function OwnerForm({ initial, onSubmit, onCancel, onOpenTagsAdmin, allDog
                         {onRemoveDogFromOwner && (
                           <button
                             type="button"
-                            onClick={() => onRemoveDogFromOwner(dog.id)}
+                            onClick={() => onRemoveDogFromOwner(dog.id, initial.id)}
                             className="ml-1 text-blush-400 hover:text-blush-600 hover:bg-blush-200 rounded-full p-0.5 transition-colors"
                             title="Odstrániť psa od majiteľa"
                           >
@@ -590,18 +594,31 @@ export function OwnerForm({ initial, onSubmit, onCancel, onOpenTagsAdmin, allDog
                   </div>
                   <div className="p-3 max-h-[50vh] overflow-y-auto">
                     {(() => {
-                      const availableDogs = allDogs.filter(d => d.owner_id !== initial.id);
-                      const filteredDogs = availableDogs.filter(d => 
-                        dogSearchQuery === '' || 
-                        d.name.toLowerCase().includes(dogSearchQuery.toLowerCase()) ||
-                        (d.breed && d.breed.toLowerCase().includes(dogSearchQuery.toLowerCase())) ||
-                        (d.owner_name && d.owner_name.toLowerCase().includes(dogSearchQuery.toLowerCase()))
-                      );
+                      // Filter dogs that are NOT already associated with this owner
+                      const availableDogs = allDogs.filter(d => {
+                        if (Array.isArray(d.owners)) {
+                          return !d.owners.some(o => o.id === initial.id);
+                        }
+                        return d.owner_id !== initial.id;
+                      });
+                      const filteredDogs = availableDogs.filter(d => {
+                        if (dogSearchQuery === '') return true;
+                        const query = dogSearchQuery.toLowerCase();
+                        if (d.name.toLowerCase().includes(query)) return true;
+                        if (d.breed && d.breed.toLowerCase().includes(query)) return true;
+                        // Check owner names for M:M
+                        if (Array.isArray(d.owners)) {
+                          return d.owners.some(o => o.name.toLowerCase().includes(query));
+                        }
+                        return false;
+                      });
                       
-                      // Sort to show dogs without owner first
+                      // Sort to show dogs without any owner first
                       const sortedDogs = [...filteredDogs].sort((a, b) => {
-                        if (!a.owner_id && b.owner_id) return -1;
-                        if (a.owner_id && !b.owner_id) return 1;
+                        const aHasOwners = Array.isArray(a.owners) ? a.owners.length > 0 : !!a.owner_id;
+                        const bHasOwners = Array.isArray(b.owners) ? b.owners.length > 0 : !!b.owner_id;
+                        if (!aHasOwners && bHasOwners) return -1;
+                        if (aHasOwners && !bHasOwners) return 1;
                         return 0;
                       });
                       
@@ -617,36 +634,43 @@ export function OwnerForm({ initial, onSubmit, onCancel, onOpenTagsAdmin, allDog
                       
                       return (
                         <div className="space-y-1">
-                          {sortedDogs.map(dog => (
-                            <button
-                              key={dog.id}
-                              type="button"
-                              onClick={() => {
-                                onAssociateDog(dog.id, initial.id);
-                                setShowDogPicker(false);
-                                setDogSearchQuery('');
-                              }}
-                              className="w-full text-left px-4 py-3 rounded-2xl hover:bg-blush-50 transition-colors group"
-                            >
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="font-medium text-beige-800 group-hover:text-blush-600 transition-colors">{dog.name}</p>
-                                  <p className="text-xs text-beige-500">
-                                    {dog.breed && <span>{dog.breed}</span>}
-                                    {dog.breed && (dog.owner_name || !dog.owner_id) && <span> · </span>}
-                                    {dog.owner_name ? (
-                                      <span>Majiteľ: {dog.owner_name}</span>
-                                    ) : !dog.owner_id && (
-                                      <span className="text-amber-500 italic">Bez majiteľa</span>
-                                    )}
-                                  </p>
+                          {sortedDogs.map(dog => {
+                            const ownerNames = Array.isArray(dog.owners) && dog.owners.length > 0
+                              ? dog.owners.map(o => o.name).join(', ')
+                              : null;
+                            const hasOwners = Array.isArray(dog.owners) ? dog.owners.length > 0 : !!dog.owner_id;
+                            
+                            return (
+                              <button
+                                key={dog.id}
+                                type="button"
+                                onClick={() => {
+                                  onAssociateDog(dog.id, initial.id);
+                                  setShowDogPicker(false);
+                                  setDogSearchQuery('');
+                                }}
+                                className="w-full text-left px-4 py-3 rounded-2xl hover:bg-blush-50 transition-colors group"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="font-medium text-beige-800 group-hover:text-blush-600 transition-colors">{dog.name}</p>
+                                    <p className="text-xs text-beige-500">
+                                      {dog.breed && <span>{dog.breed}</span>}
+                                      {dog.breed && (ownerNames || !hasOwners) && <span> · </span>}
+                                      {ownerNames ? (
+                                        <span>Majitelia: {ownerNames}</span>
+                                      ) : !hasOwners && (
+                                        <span className="text-amber-500 italic">Bez majiteľa</span>
+                                      )}
+                                    </p>
+                                  </div>
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-beige-300 group-hover:text-blush-400 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                  </svg>
                                 </div>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-beige-300 group-hover:text-blush-400 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <polyline points="9 18 15 12 9 6"/>
-                                </svg>
-                              </div>
-                            </button>
-                          ))}
+                              </button>
+                            );
+                          })}
                         </div>
                       );
                     })()}

@@ -40,8 +40,17 @@ export function DogCard({ dog, onEdit, onDelete, onOpen, onTagClick, onCharacter
           )}
         </div>
         
-        {/* Owner */}
-        <p className="text-sm text-beige-600">Majiteľ: {dog.owner_name}</p>
+        {/* Owners */}
+        {Array.isArray(dog.owners) && dog.owners.length > 0 ? (
+          <p className="text-sm text-beige-600">
+            {dog.owners.length === 1 ? 'Majiteľ: ' : 'Majitelia: '}
+            {dog.owners.map(o => o.name).join(', ')}
+          </p>
+        ) : dog.owner_name ? (
+          <p className="text-sm text-beige-600">Majiteľ: {dog.owner_name}</p>
+        ) : (
+          <p className="text-sm text-beige-400 italic">Bez majiteľa</p>
+        )}
         
         {/* Tags row - health and character */}
         {(tags.length > 0 || characterTags.length > 0) && (

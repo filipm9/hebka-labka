@@ -205,6 +205,46 @@ export default function App() {
     enabled: isAuthed && !meQuery.isLoading,
   });
 
+  // Keep selectedDog in sync with latest query data
+  useEffect(() => {
+    if (selectedDog && dogsQuery.data) {
+      const freshDog = dogsQuery.data.find(d => d.id === selectedDog.id);
+      if (freshDog && JSON.stringify(freshDog) !== JSON.stringify(selectedDog)) {
+        setSelectedDog(freshDog);
+      }
+    }
+  }, [dogsQuery.data, selectedDog]);
+
+  // Keep selectedOwner in sync with latest query data
+  useEffect(() => {
+    if (selectedOwner && ownersQuery.data) {
+      const freshOwner = ownersQuery.data.find(o => o.id === selectedOwner.id);
+      if (freshOwner && JSON.stringify(freshOwner) !== JSON.stringify(selectedOwner)) {
+        setSelectedOwner(freshOwner);
+      }
+    }
+  }, [ownersQuery.data, selectedOwner]);
+
+  // Keep editingDog in sync with latest query data
+  useEffect(() => {
+    if (editingDog?.id && dogsQuery.data) {
+      const freshDog = dogsQuery.data.find(d => d.id === editingDog.id);
+      if (freshDog && JSON.stringify(freshDog) !== JSON.stringify(editingDog)) {
+        setEditingDog(freshDog);
+      }
+    }
+  }, [dogsQuery.data, editingDog]);
+
+  // Keep editingOwner in sync with latest query data
+  useEffect(() => {
+    if (editingOwner?.id && ownersQuery.data) {
+      const freshOwner = ownersQuery.data.find(o => o.id === editingOwner.id);
+      if (freshOwner && JSON.stringify(freshOwner) !== JSON.stringify(editingOwner)) {
+        setEditingOwner(freshOwner);
+      }
+    }
+  }, [ownersQuery.data, editingOwner]);
+
   const createOwner = useMutation({
     mutationFn: api.createOwner,
     onSuccess: (createdOwner) => {
@@ -246,12 +286,13 @@ export default function App() {
 
   const createDog = useMutation({
     mutationFn: async ({ dog, newOwner }) => {
-      let ownerId = dog.owner_id;
-      if (!ownerId && newOwner) {
+      let ownerIds = dog.owner_ids || [];
+      // If a new owner name is provided, create the owner first and add to list
+      if (newOwner && newOwner.name) {
         const created = await createOwner.mutateAsync(newOwner);
-        ownerId = created.id;
+        ownerIds = [...ownerIds, created.id];
       }
-      return api.createDog({ ...dog, owner_id: ownerId });
+      return api.createDog({ ...dog, owner_ids: ownerIds });
     },
     onSuccess: (createdDog) => {
       queryClient.invalidateQueries({ queryKey: ['dogs'] });
@@ -269,6 +310,7 @@ export default function App() {
     mutationFn: ({ id, body }) => api.updateDog(id, body),
     onSuccess: (updatedDog) => {
       queryClient.invalidateQueries({ queryKey: ['dogs'] });
+      queryClient.invalidateQueries({ queryKey: ['owners'] });
       // Keep editing, just show toast
       setEditingDog(updatedDog);
       showToast('Zmeny boli uložené');
@@ -282,6 +324,7 @@ export default function App() {
     mutationFn: api.deleteDog,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dogs'] });
+      queryClient.invalidateQueries({ queryKey: ['owners'] });
       showToast('Pes bol vymazaný');
     },
     onError: (error) => {
@@ -589,10 +632,21 @@ export default function App() {
                 <div className="space-y-6">
                   <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3">
                     <h3 className="text-3xl font-light text-beige-800">{selectedDog.name}</h3>
-                    <p className="text-sm text-beige-600">
-                      Majiteľ:{' '}
-                      <span className="font-medium text-beige-700">{selectedDog.owner_name}</span>
-                    </p>
+                    {Array.isArray(selectedDog.owners) && selectedDog.owners.length > 0 ? (
+                      <p className="text-sm text-beige-600">
+                        {selectedDog.owners.length === 1 ? 'Majiteľ: ' : 'Majitelia: '}
+                        <span className="font-medium text-beige-700">
+                          {selectedDog.owners.map(o => o.name).join(', ')}
+                        </span>
+                      </p>
+                    ) : selectedDog.owner_name ? (
+                      <p className="text-sm text-beige-600">
+                        Majiteľ:{' '}
+                        <span className="font-medium text-beige-700">{selectedDog.owner_name}</span>
+                      </p>
+                    ) : (
+                      <p className="text-sm text-beige-400 italic">Bez majiteľa</p>
+                    )}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-beige-700">
                     {selectedDog.breed && (
@@ -901,17 +955,15 @@ export default function App() {
               onCancel={() => setEditingOwner(null)}
               onOpenTagsAdmin={() => setTab('tags')}
               allDogs={dogsQuery.data || []}
-              onAssociateDog={(dogId, ownerId) => {
-                const dog = dogsQuery.data?.find(d => d.id === dogId);
-                if (dog) {
-                  updateDog.mutate({ id: dogId, body: { ...dog, owner_id: ownerId } });
-                }
+              onAssociateDog={async (dogId, ownerId) => {
+                await api.addDogToOwner(ownerId, dogId);
+                queryClient.invalidateQueries({ queryKey: ['dogs'] });
+                queryClient.invalidateQueries({ queryKey: ['owners'] });
               }}
-              onRemoveDogFromOwner={(dogId) => {
-                const dog = dogsQuery.data?.find(d => d.id === dogId);
-                if (dog) {
-                  updateDog.mutate({ id: dogId, body: { ...dog, owner_id: null } });
-                }
+              onRemoveDogFromOwner={async (dogId, ownerId) => {
+                await api.removeDogFromOwner(ownerId, dogId);
+                queryClient.invalidateQueries({ queryKey: ['dogs'] });
+                queryClient.invalidateQueries({ queryKey: ['owners'] });
               }}
             />
           )}
@@ -1053,7 +1105,11 @@ export default function App() {
                 </p>
                 <div className="space-y-2">
                   {dogsQuery.data
-                    ?.filter((dog) => dog.owner_id === selectedOwner.id)
+                    ?.filter((dog) => 
+                      Array.isArray(dog.owners) 
+                        ? dog.owners.some(o => o.id === selectedOwner.id)
+                        : dog.owner_id === selectedOwner.id
+                    )
                     .map((dog) => (
                       <button
                         key={dog.id}
@@ -1072,8 +1128,11 @@ export default function App() {
                       </button>
                     ))}
                   {(!dogsQuery.data ||
-                    dogsQuery.data.filter((dog) => dog.owner_id === selectedOwner.id).length ===
-                      0) && (
+                    dogsQuery.data.filter((dog) => 
+                      Array.isArray(dog.owners) 
+                        ? dog.owners.some(o => o.id === selectedOwner.id)
+                        : dog.owner_id === selectedOwner.id
+                    ).length === 0) && (
                     <p className="text-sm text-beige-400 text-center py-4">Žiadne psy priradené.</p>
                   )}
                 </div>

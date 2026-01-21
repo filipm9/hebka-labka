@@ -101,7 +101,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
   // Force re-render when tags are updated (tagRefreshKey changes)
   // This ensures availableTags is recalculated
   const [form, setForm] = useState({
-    owner_id: '',
+    owner_ids: [],
     name: '',
     breed: '',
     weight: '',
@@ -169,8 +169,16 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
 
   useEffect(() => {
     if (initial) {
+      // Handle both old format (owner_id) and new format (owners array)
+      let ownerIds = [];
+      if (Array.isArray(initial.owners)) {
+        ownerIds = initial.owners.map(o => o.id);
+      } else if (initial.owner_id) {
+        ownerIds = [initial.owner_id];
+      }
+      
       setForm({
-        owner_id: initial.owner_id || '',
+        owner_ids: ownerIds,
         name: initial.name || '',
         breed: initial.breed || '',
         weight: initial.weight || '',
@@ -199,7 +207,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
         }
       }, 0);
     } else {
-      setForm((f) => ({ ...f, grooming_tolerance: [], health_notes: '', character_tags: [], character_notes: '', cosmetics_used: [] }));
+      setForm((f) => ({ ...f, owner_ids: [], grooming_tolerance: [], health_notes: '', character_tags: [], character_notes: '', cosmetics_used: [] }));
       setTimeout(() => {
         if (notesRef.current) notesRef.current.innerHTML = '';
         if (healthNotesRef.current) healthNotesRef.current.innerHTML = '';
@@ -213,16 +221,22 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
     setForm((f) => ({ ...f, [name]: value }));
   };
 
-  const handleOwnerSelect = (value) => {
-    setForm((f) => ({ ...f, owner_id: value }));
-    setIsOwnerDropdownOpen(false);
+  const handleOwnerToggle = (ownerId) => {
+    setForm((f) => {
+      const current = f.owner_ids || [];
+      if (current.includes(ownerId)) {
+        return { ...f, owner_ids: current.filter(id => id !== ownerId) };
+      }
+      return { ...f, owner_ids: [...current, ownerId] };
+    });
   };
 
-  const getSelectedOwnerText = () => {
-    if (!form.owner_id) return 'Vyberte majiteľa';
-    if (form.owner_id === 'new') return '+ Nový majiteľ';
-    const owner = owners.find((o) => o.id === Number(form.owner_id));
-    return owner ? owner.name : 'Vyberte majiteľa';
+  const getSelectedOwnersText = () => {
+    if (!form.owner_ids || form.owner_ids.length === 0) return 'Vyberte majiteľov';
+    const selectedOwners = owners.filter(o => form.owner_ids.includes(o.id));
+    if (selectedOwners.length === 0) return 'Vyberte majiteľov';
+    if (selectedOwners.length === 1) return selectedOwners[0].name;
+    return `${selectedOwners.length} majitelia`;
   };
 
   const handleTagToggle = (tag) => {
@@ -301,7 +315,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
     const birthdate = ageToDate(form.age);
     const payload = {
       ...form,
-      owner_id: form.owner_id === 'new' ? null : Number(form.owner_id),
+      owner_ids: form.owner_ids || [],
       weight: form.weight ? Number(form.weight) : null,
       birthdate: birthdate || null,
       behavior_notes: notesRef.current?.innerHTML || '',
@@ -310,7 +324,7 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
       cosmetics_used: form.cosmetics_used || [],
       grooming_time_minutes: form.grooming_time_minutes ? Number(form.grooming_time_minutes) : null,
     };
-    const ownerPayload = form.owner_id === 'new' ? newOwner : null;
+    const ownerPayload = newOwner.name ? newOwner : null;
     onSubmit({ dog: payload, newOwner: ownerPayload });
   };
 
@@ -335,15 +349,9 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
         )}
       </div>
       <div className="space-y-3">
-        <label className="text-sm font-medium text-beige-700">Majiteľ</label>
+        <label className="text-sm font-medium text-beige-700">Majitelia</label>
         <div className="grid grid-cols-1 gap-3">
           <div className="relative" ref={ownerDropdownRef}>
-            <input
-              type="hidden"
-              name="owner_id"
-              value={form.owner_id}
-              required={form.owner_id !== 'new'}
-            />
             <button
               type="button"
               onClick={() => setIsOwnerDropdownOpen(!isOwnerDropdownOpen)}
@@ -351,9 +359,9 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
                 isOwnerDropdownOpen
                   ? 'bg-white border-blush-300 ring-2 ring-blush-200'
                   : 'border-beige-300 bg-white/80 hover:bg-white focus:bg-white focus:border-blush-300'
-              } ${!form.owner_id ? 'text-beige-400' : ''}`}
+              } ${!form.owner_ids || form.owner_ids.length === 0 ? 'text-beige-400' : ''}`}
             >
-              {getSelectedOwnerText()}
+              {getSelectedOwnersText()}
             </button>
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <svg
@@ -374,57 +382,74 @@ export function DogForm({ owners, initial, onSubmit, onCancel, onOpenTagsAdmin }
             {isOwnerDropdownOpen && (
               <div className="absolute z-10 w-full mt-2 bg-white rounded-2xl border border-beige-300 shadow-lg overflow-hidden">
                 <div className="max-h-60 overflow-y-auto">
-                  <button
-                    type="button"
-                    onClick={() => handleOwnerSelect('')}
-                    className={`w-full text-left px-4 py-3 text-sm transition-colors ${
-                      !form.owner_id
-                        ? 'bg-blush-50 text-blush-700'
-                        : 'text-beige-700 hover:bg-blush-50 hover:text-blush-700'
-                    }`}
-                  >
-                    Vyberte majiteľa
-                  </button>
-                  {owners.map((o) => (
-                    <button
-                      key={o.id}
-                      type="button"
-                      onClick={() => handleOwnerSelect(String(o.id))}
-                      className={`w-full text-left px-4 py-3 text-sm transition-colors ${
-                        form.owner_id === String(o.id)
-                          ? 'bg-blush-50 text-blush-700'
-                          : 'text-beige-700 hover:bg-blush-50 hover:text-blush-700'
-                      }`}
-                    >
-                      {o.name}
-                    </button>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => handleOwnerSelect('new')}
-                    className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors ${
-                      form.owner_id === 'new'
-                        ? 'bg-blush-50 text-blush-700'
-                        : 'text-blush-500 hover:bg-blush-50 hover:text-blush-700'
-                    }`}
-                  >
-                    + Nový majiteľ
-                  </button>
+                  <p className="px-4 py-2 text-xs text-beige-500 bg-beige-50 border-b border-beige-200">
+                    Vyberte jedného alebo viacerých majiteľov
+                  </p>
+                  {owners.map((o) => {
+                    const isSelected = (form.owner_ids || []).includes(o.id);
+                    return (
+                      <button
+                        key={o.id}
+                        type="button"
+                        onClick={() => handleOwnerToggle(o.id)}
+                        className={`w-full text-left px-4 py-3 text-sm transition-colors flex items-center justify-between ${
+                          isSelected
+                            ? 'bg-blush-50 text-blush-700'
+                            : 'text-beige-700 hover:bg-blush-50 hover:text-blush-700'
+                        }`}
+                      >
+                        <span>{o.name}</span>
+                        {isSelected && (
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blush-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
           </div>
-          {form.owner_id === 'new' && (
-            <div className="bg-beige-50/50 rounded-2xl p-4">
-              <input
-                className="w-full rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
-                placeholder="Meno majiteľa *"
-                value={newOwner.name}
-                onChange={(e) => setNewOwner((o) => ({ ...o, name: e.target.value }))}
-                required
-              />
+          
+          {/* Show selected owners as chips */}
+          {form.owner_ids && form.owner_ids.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {form.owner_ids.map((ownerId) => {
+                const owner = owners.find(o => o.id === ownerId);
+                if (!owner) return null;
+                return (
+                  <span
+                    key={ownerId}
+                    className="px-3 py-1.5 rounded-full bg-blush-100 text-blush-700 text-sm font-medium flex items-center gap-1.5"
+                  >
+                    {owner.name}
+                    <button
+                      type="button"
+                      onClick={() => handleOwnerToggle(ownerId)}
+                      className="text-blush-400 hover:text-blush-600 rounded-full hover:bg-blush-200 p-0.5"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </span>
+                );
+              })}
             </div>
           )}
+
+          {/* Add new owner section */}
+          <div className="border-t border-beige-200 pt-3 mt-1">
+            <p className="text-xs text-beige-500 mb-2">Alebo pridajte nového majiteľa:</p>
+            <input
+              className="w-full rounded-2xl border border-beige-300 bg-white/80 px-4 py-3 text-beige-800 placeholder-beige-400 focus:bg-white focus:border-blush-300 transition-all"
+              placeholder="Meno nového majiteľa"
+              value={newOwner.name}
+              onChange={(e) => setNewOwner((o) => ({ ...o, name: e.target.value }))}
+            />
+          </div>
         </div>
       </div>
 

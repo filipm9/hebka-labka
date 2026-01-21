@@ -32,15 +32,19 @@ ownersRouter.get('/', async (req, res) => {
 
   const { rows } = await query(
     `
-    select o.*, coalesce(count(d.id), 0) as dog_count
+    select o.*, 
+      coalesce(
+        (select count(distinct do2.dog_id) from dog_owners do2 where do2.owner_id = o.id),
+        0
+      ) as dog_count
     from owners o
-    left join dogs d on d.owner_id = o.id
     where ($1 = '' or 
       o.name ilike $2 or
       exists (
         select 1 
-        from dogs d2
-        where d2.owner_id = o.id
+        from dog_owners do3
+        join dogs d2 on d2.id = do3.dog_id
+        where do3.owner_id = o.id
         and exists (
           select 1 
           from unnest(d2.grooming_tolerance::text[]) as tag
@@ -49,12 +53,12 @@ ownersRouter.get('/', async (req, res) => {
       )
     )
     and ($3 = '' or exists (
-      select 1 from dogs d3
-      where d3.owner_id = o.id
+      select 1 from dog_owners do4
+      join dogs d3 on d3.id = do4.dog_id
+      where do4.owner_id = o.id
       and d3.breed ilike $4
     ))
     ${contactTagCondition}
-    group by o.id
     order by o.updated_at desc
     limit 50
     `,
@@ -101,7 +105,35 @@ ownersRouter.put('/:id', async (req, res) => {
 });
 
 ownersRouter.delete('/:id', async (req, res) => {
+  // dog_owners entries will be deleted via CASCADE
   await query('delete from owners where id = $1', [req.params.id]);
   res.json({ ok: true });
 });
 
+// Add a dog to an owner
+ownersRouter.post('/:id/dogs/:dogId', async (req, res) => {
+  const ownerId = req.params.id;
+  const dogId = req.params.dogId;
+  
+  try {
+    await query(
+      'insert into dog_owners (dog_id, owner_id) values ($1, $2) on conflict do nothing',
+      [dogId, ownerId],
+    );
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(400).json({ error: 'Failed to associate dog with owner' });
+  }
+});
+
+// Remove a dog from an owner
+ownersRouter.delete('/:id/dogs/:dogId', async (req, res) => {
+  const ownerId = req.params.id;
+  const dogId = req.params.dogId;
+  
+  await query(
+    'delete from dog_owners where dog_id = $1 and owner_id = $2',
+    [dogId, ownerId],
+  );
+  res.json({ ok: true });
+});
