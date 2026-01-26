@@ -10,6 +10,7 @@ import { ownersRouter } from './routes/owners.js';
 import { dogsRouter } from './routes/dogs.js';
 import { usersRouter } from './routes/users.js';
 import { configRouter } from './routes/config.js';
+import { backupRouter } from './routes/backup.js';
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/owners', ownersRouter);
 app.use('/dogs', dogsRouter);
 app.use('/users', usersRouter);
 app.use('/config', configRouter);
+app.use('/backup', backupRouter);
 
 app.use((err, req, res, _next) => {
   console.error(err);

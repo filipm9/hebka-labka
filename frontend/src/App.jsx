@@ -7,6 +7,7 @@ import { DogForm } from './components/DogForm.jsx';
 import { OwnerForm } from './components/OwnerForm.jsx';
 import { TagsAdmin } from './components/TagsAdmin.jsx';
 import { UsersAdmin } from './components/UsersAdmin.jsx';
+import { BackupAdmin } from './components/BackupAdmin.jsx';
 import { ConfirmDialog } from './components/ConfirmDialog.jsx';
 import { toTags, sanitizeHtml } from './utils/helpers.js';
 
@@ -961,10 +962,13 @@ export default function App() {
       )}
 
       {tab === 'admins' && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <UsersAdmin
             onClose={() => setTab('dogs')}
             currentUserId={meQuery.data?.id}
+          />
+          <BackupAdmin
+            onToast={showToast}
           />
         </div>
       )}

@@ -15,6 +15,39 @@ async function request(path, options = {}) {
   return res.json();
 }
 
+/**
+ * Download a file from the API
+ */
+async function downloadFile(path, defaultFilename) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.error || 'Download failed');
+  }
+
+  // Get filename from Content-Disposition header if available
+  const contentDisposition = res.headers.get('Content-Disposition');
+  let filename = defaultFilename;
+  if (contentDisposition) {
+    const match = contentDisposition.match(/filename="?([^";\n]+)"?/);
+    if (match) filename = match[1];
+  }
+
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+
+  return { filename, size: blob.size };
+}
+
 export const api = {
   login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   logout: () => request('/auth/logout', { method: 'POST' }),
@@ -84,5 +117,9 @@ export const api = {
   getConfig: () => request('/config'),
   getConfigKey: (key) => request(`/config/${key}`),
   setConfigKey: (key, value) => request(`/config/${key}`, { method: 'PUT', body: JSON.stringify({ value }) }),
+  // Backup endpoints
+  backupStatus: () => request('/backup/status'),
+  downloadBackupSql: () => downloadFile('/backup/sql', 'backup.sql'),
+  downloadBackupJson: () => downloadFile('/backup/json', 'backup.json'),
 };
 
