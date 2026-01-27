@@ -15,6 +15,9 @@ import { transcribeRouter } from './routes/transcribe.js';
 
 const app = express();
 
+// Trust proxy for Railway/Heroku/etc (needed for rate limiting behind reverse proxy)
+app.set('trust proxy', 1);
+
 app.use(
   cors({
     origin: config.corsOrigin,

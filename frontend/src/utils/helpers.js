@@ -28,6 +28,93 @@ export function toTags(value) {
  * @param {string} html - The HTML string to sanitize
  * @returns {string} - Sanitized HTML string
  */
+// ============ Voice Transcription Storage ============
+
+const TRANSCRIPTIONS_KEY = 'voice_transcriptions';
+
+/**
+ * Represents a saved voice transcription
+ * @typedef {Object} SavedTranscription
+ * @property {string} id - Unique identifier
+ * @property {string} text - The transcribed text
+ * @property {string} rawText - Original Whisper transcription
+ * @property {Date} createdAt - When it was saved
+ * @property {boolean} processed - Whether it has been processed/used
+ */
+
+/**
+ * Gets all saved transcriptions from localStorage
+ * @returns {SavedTranscription[]}
+ */
+export function getSavedTranscriptions() {
+  try {
+    const data = localStorage.getItem(TRANSCRIPTIONS_KEY);
+    if (!data) return [];
+    const parsed = JSON.parse(data);
+    return parsed.map(t => ({
+      ...t,
+      createdAt: new Date(t.createdAt)
+    }));
+  } catch (e) {
+    console.error('Failed to load transcriptions:', e);
+    return [];
+  }
+}
+
+/**
+ * Saves a new transcription to localStorage
+ * @param {string} text - The cleaned transcribed text
+ * @param {string} rawText - The original Whisper text
+ * @returns {SavedTranscription} The saved transcription
+ */
+export function saveTranscription(text, rawText) {
+  const transcriptions = getSavedTranscriptions();
+  const newTranscription = {
+    id: `t_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    text,
+    rawText,
+    createdAt: new Date().toISOString(),
+    processed: false
+  };
+  transcriptions.unshift(newTranscription);
+  localStorage.setItem(TRANSCRIPTIONS_KEY, JSON.stringify(transcriptions));
+  return { ...newTranscription, createdAt: new Date(newTranscription.createdAt) };
+}
+
+/**
+ * Marks a transcription as processed
+ * @param {string} id - The transcription ID
+ */
+export function markTranscriptionProcessed(id) {
+  const transcriptions = getSavedTranscriptions();
+  const updated = transcriptions.map(t =>
+    t.id === id ? { ...t, processed: true, createdAt: t.createdAt.toISOString() } : { ...t, createdAt: t.createdAt.toISOString() }
+  );
+  localStorage.setItem(TRANSCRIPTIONS_KEY, JSON.stringify(updated));
+}
+
+/**
+ * Deletes a transcription
+ * @param {string} id - The transcription ID
+ */
+export function deleteTranscription(id) {
+  const transcriptions = getSavedTranscriptions();
+  const filtered = transcriptions
+    .filter(t => t.id !== id)
+    .map(t => ({ ...t, createdAt: t.createdAt.toISOString() }));
+  localStorage.setItem(TRANSCRIPTIONS_KEY, JSON.stringify(filtered));
+}
+
+/**
+ * Gets the count of unprocessed transcriptions
+ * @returns {number}
+ */
+export function getUnprocessedCount() {
+  return getSavedTranscriptions().filter(t => !t.processed).length;
+}
+
+// ============ HTML Sanitization ============
+
 export function sanitizeHtml(html) {
   if (!html) return '';
   
