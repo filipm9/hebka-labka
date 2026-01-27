@@ -9,6 +9,7 @@ import { TagsAdmin } from './components/TagsAdmin.jsx';
 import { UsersAdmin } from './components/UsersAdmin.jsx';
 import { BackupAdmin } from './components/BackupAdmin.jsx';
 import { ConfirmDialog } from './components/ConfirmDialog.jsx';
+import { VoiceRecorder } from './components/VoiceRecorder.jsx';
 import { toTags, sanitizeHtml } from './utils/helpers.js';
 
 function useAuth() {
@@ -1179,6 +1180,9 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Voice recorder floating button */}
+      <VoiceRecorder onToast={showToast} />
 
       {/* Toast notification */}
       {toast && (

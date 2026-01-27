@@ -11,6 +11,8 @@ export const config = {
   cookieSecure: process.env.COOKIE_SECURE === 'true',
   // For cross-origin deployments (frontend/backend on different domains), use 'none'
   cookieSameSite: process.env.COOKIE_SAMESITE || 'lax',
+  // OpenAI API key for Whisper speech-to-text
+  openaiApiKey: process.env.OPENAI_API_KEY || '',
 };
 
 if (!config.dbUrl) {

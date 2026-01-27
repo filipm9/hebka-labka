@@ -48,7 +48,31 @@ async function downloadFile(path, defaultFilename) {
   return { filename, size: blob.size };
 }
 
+/**
+ * Upload audio file for transcription
+ * Returns { raw: string, text: string } where raw is Whisper output and text is GPT-cleaned
+ */
+async function transcribeAudio(audioBlob) {
+  const formData = new FormData();
+  formData.append('audio', audioBlob, 'recording.webm');
+
+  const res = await fetch(`${API_BASE}/transcribe`, {
+    method: 'POST',
+    credentials: 'include',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.error || 'Transcription failed');
+  }
+
+  const data = await res.json();
+  return { raw: data.raw, text: data.text };
+}
+
 export const api = {
+  transcribeAudio,
   login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
   logout: () => request('/auth/logout', { method: 'POST' }),
   me: () => request('/auth/me'),

@@ -29,6 +29,7 @@ services:
       CORS_ORIGIN: http://localhost:5173
       SESSION_NAME: dg_session
       COOKIE_SECURE: 'false'
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     ports:
       - '4000:4000'
     volumes:
