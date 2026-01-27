@@ -145,5 +145,6 @@ export const api = {
   backupStatus: () => request('/backup/status'),
   downloadBackupSql: () => downloadFile('/backup/sql', 'backup.sql'),
   downloadBackupJson: () => downloadFile('/backup/json', 'backup.json'),
+  sendBackupEmail: () => request('/backup/send-email', { method: 'POST' }),
 };
 

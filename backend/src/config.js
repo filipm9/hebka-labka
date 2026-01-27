@@ -13,6 +13,11 @@ export const config = {
   cookieSameSite: process.env.COOKIE_SAMESITE || 'lax',
   // OpenAI API key for Whisper speech-to-text
   openaiApiKey: process.env.OPENAI_API_KEY || '',
+  // Cron job secret for scheduled tasks (backup, etc.)
+  cronSecret: process.env.CRON_SECRET || '',
+  // Resend API key for sending backup emails
+  resendApiKey: process.env.RESEND_API_KEY || '',
+  backupEmail: process.env.BACKUP_EMAIL || 'filip.muller22@gmail.com',
 };
 
 if (!config.dbUrl) {

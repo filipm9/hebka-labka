@@ -1,10 +1,10 @@
 import express from 'express';
+import { Resend } from 'resend';
 import { query } from '../db.js';
 import { authRequired } from '../auth.js';
+import { config } from '../config.js';
 
 export const backupRouter = express.Router();
-
-backupRouter.use(authRequired);
 
 /**
  * Get primary key columns for a table
@@ -102,62 +102,178 @@ async function getColumnTypes(tableName) {
 }
 
 /**
- * Generate a complete SQL backup (readable format)
- * GET /backup/sql
+ * Generate SQL backup content (reusable function)
  */
-backupRouter.get('/sql', async (req, res) => {
-  try {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const tables = ['users', 'owners', 'dogs', 'dog_owners', 'app_config'];
+async function generateSqlBackup() {
+  const tables = ['users', 'owners', 'dogs', 'dog_owners', 'app_config'];
 
-    let sql = `-- Database Backup: doggroomer
+  let sql = `-- Database Backup: doggroomer
 -- Generated: ${new Date().toISOString()}
 -- This file contains INSERT statements for all data
 -- To restore: run this SQL after creating the schema
 
 `;
 
-    // Add table truncation (optional, commented out)
-    sql += '-- Uncomment the following lines to clear existing data before restore:\n';
-    for (const table of [...tables].reverse()) {
-      sql += `-- TRUNCATE TABLE ${table} CASCADE;\n`;
+  // Add table truncation (optional, commented out)
+  sql += '-- Uncomment the following lines to clear existing data before restore:\n';
+  for (const table of [...tables].reverse()) {
+    sql += `-- TRUNCATE TABLE ${table} CASCADE;\n`;
+  }
+  sql += '\n';
+
+  // Disable foreign key checks temporarily
+  sql += '-- Disable triggers for clean insert\n';
+  sql += 'SET session_replication_role = replica;\n\n';
+
+  // Generate inserts for each table
+  for (const table of tables) {
+    const columns = await getTableColumns(table);
+    const columnTypes = await getColumnTypes(table);
+    if (columns.length === 0) continue;
+
+    sql += `-- Table: ${table}\n`;
+    sql += `-- Columns: ${columns.join(', ')}\n`;
+
+    const inserts = await generateTableInserts(table, columns, columnTypes);
+    if (inserts) {
+      sql += inserts + '\n';
+    } else {
+      sql += `-- (no data)\n`;
     }
     sql += '\n';
+  }
 
-    // Disable foreign key checks temporarily
-    sql += '-- Disable triggers for clean insert\n';
-    sql += 'SET session_replication_role = replica;\n\n';
+  // Reset sequences (only for tables with serial/identity columns)
+  sql += '-- Reset sequences to max id values\n';
+  for (const table of tables) {
+    const columns = await getTableColumns(table);
+    if (!columns.includes('id')) continue;
+    sql += `SELECT setval(pg_get_serial_sequence('${table}', 'id'), COALESCE((SELECT MAX(id) FROM ${table}), 1), true);\n`;
+  }
+  sql += '\n';
 
-    // Generate inserts for each table
-    for (const table of tables) {
-      const columns = await getTableColumns(table);
-      const columnTypes = await getColumnTypes(table);
-      if (columns.length === 0) continue;
+  // Re-enable foreign key checks
+  sql += '-- Re-enable triggers\n';
+  sql += 'SET session_replication_role = DEFAULT;\n';
 
-      sql += `-- Table: ${table}\n`;
-      sql += `-- Columns: ${columns.join(', ')}\n`;
+  return sql;
+}
 
-      const inserts = await generateTableInserts(table, columns, columnTypes);
-      if (inserts) {
-        sql += inserts + '\n';
-      } else {
-        sql += `-- (no data)\n`;
-      }
-      sql += '\n';
+/**
+ * Generate JSON backup content (reusable function)
+ */
+async function generateJsonBackup() {
+  const tables = ['users', 'owners', 'dogs', 'dog_owners', 'app_config'];
+
+  const backup = {
+    metadata: {
+      database: 'doggroomer',
+      timestamp: new Date().toISOString(),
+      version: '1.0',
+    },
+    tables: {},
+  };
+
+  for (const table of tables) {
+    const pkColumns = await getPrimaryKeyColumns(table);
+    const columns = await getTableColumns(table);
+    const orderBy = pkColumns.length > 0 ? pkColumns.join(', ') : columns[0];
+
+    const { rows } = await query(`SELECT * FROM ${table} ORDER BY ${orderBy}`);
+    // For users table, exclude password_hash for security
+    if (table === 'users') {
+      backup.tables[table] = rows.map(({ password_hash, ...rest }) => rest);
+    } else {
+      backup.tables[table] = rows;
+    }
+  }
+
+  return JSON.stringify(backup, null, 2);
+}
+
+/**
+ * Send backup email via Resend (SQL + JSON attachments)
+ */
+async function sendBackupEmail(sqlContent, jsonContent) {
+  if (!config.resendApiKey) {
+    throw new Error('RESEND_API_KEY not configured');
+  }
+
+  const resend = new Resend(config.resendApiKey);
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+
+  await resend.emails.send({
+    from: 'onboarding@resend.dev',
+    to: config.backupEmail,
+    subject: `[Hebka Labka] Database Backup - ${new Date().toLocaleDateString('sk-SK')}`,
+    text: `Automatický týždenný backup databázy.\n\nDátum: ${new Date().toLocaleString('sk-SK')}\n\nBackup je v prílohe (SQL aj JSON formát).`,
+    attachments: [
+      {
+        filename: `backup-${timestamp}.sql`,
+        content: Buffer.from(sqlContent).toString('base64'),
+      },
+      {
+        filename: `backup-${timestamp}.json`,
+        content: Buffer.from(jsonContent).toString('base64'),
+      },
+    ],
+  });
+}
+
+/**
+ * Cron endpoint for scheduled backup (protected by CRON_SECRET)
+ * POST /backup/cron
+ */
+backupRouter.post('/cron', async (req, res) => {
+  try {
+    // Verify cron secret
+    const authHeader = req.headers.authorization;
+    const providedSecret = authHeader?.replace('Bearer ', '');
+
+    if (!config.cronSecret || providedSecret !== config.cronSecret) {
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    // Reset sequences (only for tables with serial/identity columns)
-    sql += '-- Reset sequences to max id values\n';
-    for (const table of tables) {
-      const columns = await getTableColumns(table);
-      if (!columns.includes('id')) continue; // Skip tables without id column
-      sql += `SELECT setval(pg_get_serial_sequence('${table}', 'id'), COALESCE((SELECT MAX(id) FROM ${table}), 1), true);\n`;
-    }
-    sql += '\n';
+    console.log('Starting scheduled backup...');
+    const sql = await generateSqlBackup();
+    const json = await generateJsonBackup();
+    await sendBackupEmail(sql, json);
+    console.log('Scheduled backup sent successfully to', config.backupEmail);
 
-    // Re-enable foreign key checks
-    sql += '-- Re-enable triggers\n';
-    sql += 'SET session_replication_role = DEFAULT;\n';
+    res.json({ success: true, message: `Backup sent to ${config.backupEmail}` });
+  } catch (error) {
+    console.error('Scheduled backup error:', error);
+    res.status(500).json({ error: 'Failed to send backup', details: error.message });
+  }
+});
+
+/**
+ * Send backup via email (manual trigger, requires auth)
+ * POST /backup/send-email
+ */
+backupRouter.post('/send-email', authRequired, async (req, res) => {
+  try {
+    console.log('Manual backup email requested...');
+    const sql = await generateSqlBackup();
+    const json = await generateJsonBackup();
+    await sendBackupEmail(sql, json);
+    console.log('Manual backup sent successfully to', config.backupEmail);
+
+    res.json({ success: true, email: config.backupEmail });
+  } catch (error) {
+    console.error('Manual backup email error:', error);
+    res.status(500).json({ error: 'Failed to send backup email', details: error.message });
+  }
+});
+
+/**
+ * Generate a complete SQL backup (readable format)
+ * GET /backup/sql
+ */
+backupRouter.get('/sql', authRequired, async (req, res) => {
+  try {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const sql = await generateSqlBackup();
 
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="backup-${timestamp}.sql"`);
@@ -172,38 +288,14 @@ backupRouter.get('/sql', async (req, res) => {
  * Generate a JSON backup (for easier parsing/import)
  * GET /backup/json
  */
-backupRouter.get('/json', async (req, res) => {
+backupRouter.get('/json', authRequired, async (req, res) => {
   try {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const tables = ['users', 'owners', 'dogs', 'dog_owners', 'app_config'];
-
-    const backup = {
-      metadata: {
-        database: 'doggroomer',
-        timestamp: new Date().toISOString(),
-        version: '1.0',
-      },
-      tables: {},
-    };
-
-    for (const table of tables) {
-      // Get primary key columns for ordering
-      const pkColumns = await getPrimaryKeyColumns(table);
-      const columns = await getTableColumns(table);
-      const orderBy = pkColumns.length > 0 ? pkColumns.join(', ') : columns[0];
-      
-      const { rows } = await query(`SELECT * FROM ${table} ORDER BY ${orderBy}`);
-      // For users table, exclude password_hash for security
-      if (table === 'users') {
-        backup.tables[table] = rows.map(({ password_hash, ...rest }) => rest);
-      } else {
-        backup.tables[table] = rows;
-      }
-    }
+    const json = await generateJsonBackup();
 
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="backup-${timestamp}.json"`);
-    res.json(backup);
+    res.send(json);
   } catch (error) {
     console.error('JSON backup error:', error);
     res.status(500).json({ error: 'Failed to generate JSON backup' });
@@ -214,7 +306,7 @@ backupRouter.get('/json', async (req, res) => {
  * Get database stats
  * GET /backup/status
  */
-backupRouter.get('/status', async (req, res) => {
+backupRouter.get('/status', authRequired, async (req, res) => {
   const tables = ['users', 'owners', 'dogs', 'dog_owners', 'app_config'];
   const stats = {};
 

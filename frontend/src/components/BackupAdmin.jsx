@@ -4,6 +4,7 @@ import { api } from '../api/client.js';
 
 export function BackupAdmin({ onClose, onToast }) {
   const [downloading, setDownloading] = useState(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
 
   const statusQuery = useQuery({
     queryKey: ['backup-status'],
@@ -36,6 +37,18 @@ export function BackupAdmin({ onClose, onToast }) {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const handleSendEmail = async () => {
+    setSendingEmail(true);
+    try {
+      const result = await api.sendBackupEmail();
+      onToast?.(`Záloha odoslaná na ${result.email}`);
+    } catch (error) {
+      onToast?.(error.message || 'Chyba pri odosielaní zálohy', 'error');
+    } finally {
+      setSendingEmail(false);
+    }
   };
 
   const stats = statusQuery.data?.stats || {};
@@ -197,6 +210,52 @@ export function BackupAdmin({ onClose, onToast }) {
           </button>
 
         </div>
+      </div>
+
+      {/* Send via Email */}
+      <div className="space-y-4 pt-4 border-t border-beige-200">
+        <h3 className="text-lg font-medium text-beige-800">Odoslať emailom</h3>
+        <p className="text-sm text-beige-600">
+          Odošle zálohu (SQL + JSON) na email filip.muller22@gmail.com
+        </p>
+
+        <button
+          onClick={handleSendEmail}
+          disabled={sendingEmail}
+          className="flex items-center gap-4 bg-white rounded-2xl p-4 border border-beige-200 hover:border-sand-400 hover:bg-sand-50/30 transition-all text-left disabled:opacity-60 disabled:cursor-not-allowed w-full"
+        >
+          <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-sand-100 flex items-center justify-center">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6 text-sand-600"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-beige-800">
+              {sendingEmail ? 'Odosielam...' : 'Odoslať zálohu na email'}
+            </p>
+            <p className="text-sm text-beige-500">
+              Pošle SQL aj JSON zálohu ako prílohy emailu.
+            </p>
+          </div>
+          {sendingEmail && (
+            <div className="flex-shrink-0">
+              <svg className="animate-spin h-5 w-5 text-sand-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+          )}
+        </button>
       </div>
 
       {/* Info Section */}
