@@ -10,7 +10,7 @@ import { UsersAdmin } from './components/UsersAdmin.jsx';
 import { BackupAdmin } from './components/BackupAdmin.jsx';
 import { ConfirmDialog } from './components/ConfirmDialog.jsx';
 import { VoiceRecorder } from './components/VoiceRecorder.jsx';
-import { toTags, sanitizeHtml, getUnprocessedCount } from './utils/helpers.js';
+import { toTags, sanitizeHtml } from './utils/helpers.js';
 
 function useAuth() {
   const queryClient = useQueryClient();
@@ -57,7 +57,6 @@ export default function App() {
   const [ownerContactTagFilter, setOwnerContactTagFilter] = useState([]);
   const [toast, setToast] = useState(null); // { message: string, type: 'success' | 'error' }
   const [showVoiceNotes, setShowVoiceNotes] = useState(false);
-  const [voiceNotesCount, setVoiceNotesCount] = useState(0);
 
   // Helper to show toast
   const showToast = (message, type = 'success') => {
@@ -71,11 +70,6 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [toast]);
-
-  // Load voice notes count on mount and when modal closes
-  useEffect(() => {
-    setVoiceNotesCount(getUnprocessedCount());
-  }, [showVoiceNotes]);
 
   // Fetch config from database
   const configQuery = useQuery({
@@ -296,7 +290,7 @@ export default function App() {
         {/* Secondary Navigation - Tagy, Admins, and User Actions */}
         <div className="flex gap-2 items-center">
           <button
-            className="px-4 py-2 rounded-xl text-xs font-medium transition-all text-beige-500 hover:text-blush-500 hover:bg-blush-50/50 relative flex items-center gap-1.5"
+            className="px-4 py-2 rounded-xl text-xs font-medium transition-all text-beige-500 hover:text-blush-500 hover:bg-blush-50/50 flex items-center gap-1.5"
             onClick={() => setShowVoiceNotes(true)}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -306,11 +300,6 @@ export default function App() {
               <line x1="8" y1="23" x2="16" y2="23" />
             </svg>
             Hlasové poznámky
-            {voiceNotesCount > 0 && (
-              <span className="bg-red-500 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[1rem] text-center">
-                {voiceNotesCount > 9 ? '9+' : voiceNotesCount}
-              </span>
-            )}
           </button>
           <div className="w-px h-6 bg-beige-300 mx-1"></div>
           <button
@@ -1210,10 +1199,7 @@ export default function App() {
       <VoiceRecorder 
         onToast={showToast} 
         showSavedListExternal={showVoiceNotes}
-        onCloseSavedList={() => {
-          setShowVoiceNotes(false);
-          setVoiceNotesCount(getUnprocessedCount());
-        }}
+        onCloseSavedList={() => setShowVoiceNotes(false)}
       />
 
       {/* Toast notification */}
